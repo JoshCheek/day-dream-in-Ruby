@@ -1,34 +1,70 @@
 grammar Whatevz
   rule body
-    expressions
+    exprs:expressions {
+      def to_ast
+        RubySyntax::Body.new exprs.to_ast
+      end
+    }
   end
 
   rule expressions
-    (sp expression sp nl?)*
+    (sp expression sp nl?)* {
+      def to_ast
+        RubySyntax::Expressions.new elements.map { |el|
+          el.expression.to_ast
+        }
+      end
+    }
   end
 
   rule expression
-    binary_expression / collapsible
+    expression:(binary_expression / syntax_unit) {
+      def to_ast
+        expression.to_ast
+      end
+    }
   end
 
   rule binary_expression
-    collapsible sp operator sp collapsible
+    lhs:syntax_unit sp operator sp rhs:syntax_unit {
+      def to_ast
+        RubySyntax::BinaryExpression.new lhs.to_ast,
+                                         operator.text_value,
+                                         rhs.to_ast
+      end
+    }
   end
 
-  rule collapsible
-    variable / '(' sp expression sp ')'
+  rule syntax_unit
+    unit:variable {
+      def to_ast
+        unit.to_ast
+      end
+    }
   end
 
   rule variable
-    local_variable / instance_variable
+    variable:(local_variable / instance_variable) {
+      def to_ast
+        variable.to_ast
+      end
+    }
   end
 
   rule local_variable
-    identifier
+    identifier {
+      def to_ast
+        RubySyntax::LocalVariable.new text_value
+      end
+    }
   end
 
   rule instance_variable
-    "@" identifier
+    "@" identifier {
+      def to_ast
+        RubySyntax::InstanceVariable.new text_value
+      end
+    }
   end
 
   rule identifier
