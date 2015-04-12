@@ -32,7 +32,7 @@ grammar Whatevz
   end
 
   rule identifier
-    [a-z]+
+    [_a-z]+
   end
 
   rule operator
