@@ -39,10 +39,41 @@ RSpec.configure do |config|
 end
 
 RSpec.describe 'My language' do
-  it 'basic parsing' do
+  class << self
+    alias are it
+  end
+
+  example 'sanity test: some basic parsing' do
     parses! 'x', terminals_include: 'x'
   end
 
-  describe 'locals' do
+  context 'entry locations' do
+    it 'exports named classes'
+    it 'exports anonymous functions to call'
+  end
+
+  context 'self' do
+    it 'is represented with @'
+    it 'calls methods on self with @.method'
+  end
+
+  context 'the assigment arrow' do
+    it 'assigns locals'
+    it 'assigns ivars'
+    it 'calls setters'
+  end
+
+  context 'blocks' do
+    are 'indicated by an arg list and inline body'
+    are 'indicated by an arg list and indentation'
+    are 'indicated by indentation without an arg list'
+  end
+
+  context 'local variables' do
+  end
+
+  context 'argument lists' do
+    are 'indicated by parentheses'
+    #...
   end
 end
