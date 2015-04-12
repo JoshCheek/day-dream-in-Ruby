@@ -86,6 +86,17 @@ RSpec.describe 'My language' do
         name:      'b',
         arguments: [],
       }
+      parses! 'x.y.z', first: {
+        type:      :send_message,
+        name:      'z',
+        arguments: [],
+        receiver:  {
+          type:      :send_message,
+          name:      'y',
+          arguments: [],
+          receiver:  { type: :local_variable, name: 'x' },
+        },
+      }
     end
 
     example 'lines beginning with method calls are invoked on the result of the previous line'

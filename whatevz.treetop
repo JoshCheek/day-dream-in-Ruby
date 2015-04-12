@@ -19,11 +19,11 @@ grammar Whatevz
 
   rule expression
     head:(variable / self)
-    tail:expression_modifiers? {
+    tail:expression_modifiers* {
       def to_ast
-        ast = head.to_ast
-        ast = tail.to_ast ast unless tail.empty?
-        ast
+        tail.elements.inject head.to_ast do |ast, modifier|
+          modifier.to_ast ast
+        end
       end
     }
   end
