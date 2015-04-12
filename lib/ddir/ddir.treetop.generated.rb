@@ -472,14 +472,28 @@ module DayDreamInRuby
   end
 
   module Params0
-    def param_name
-      elements[0]
+    def local_variable
+      elements[3]
     end
   end
 
   module Params1
+    def first_name
+      elements[0]
+    end
+
+    def remaining_names
+      elements[1]
+    end
+  end
+
+  module Params2
     def ordered_names
-      [param_name.text_value.intern]
+      names = []
+      names << first_name.text_value.intern unless first_name.empty?
+      remaining_names.elements.each { |n| names << n.local_variable.text_value.intern }
+      names
+      # param_names.elements.map { |pn| pn.text_value.intern }
     end
   end
 
@@ -495,12 +509,67 @@ module DayDreamInRuby
     end
 
     i0, s0 = index, []
-    r1 = _nt_local_variable
+    r2 = _nt_local_variable
+    if r2
+      r1 = r2
+    else
+      r1 = instantiate_node(SyntaxNode,input, index...index)
+    end
     s0 << r1
+    if r1
+      s3, i3 = [], index
+      loop do
+        i4, s4 = index, []
+        r6 = _nt_sp
+        if r6
+          r5 = r6
+        else
+          r5 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s4 << r5
+        if r5
+          if has_terminal?(',', false, index)
+            r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure(',')
+            r7 = nil
+          end
+          s4 << r7
+          if r7
+            r9 = _nt_sp
+            if r9
+              r8 = r9
+            else
+              r8 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s4 << r8
+            if r8
+              r10 = _nt_local_variable
+              s4 << r10
+            end
+          end
+        end
+        if s4.last
+          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
+          r4.extend(Params0)
+        else
+          @index = i4
+          r4 = nil
+        end
+        if r4
+          s3 << r4
+        else
+          break
+        end
+      end
+      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+      s0 << r3
+    end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-      r0.extend(Params0)
       r0.extend(Params1)
+      r0.extend(Params2)
     else
       @index = i0
       r0 = nil

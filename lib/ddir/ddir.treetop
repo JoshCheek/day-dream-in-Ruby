@@ -65,9 +65,13 @@ grammar DayDreamInRuby
   end
 
   rule params
-    param_name:local_variable {
+    first_name:local_variable?
+    remaining_names:(sp? ',' sp? local_variable)* {
       def ordered_names
-        [param_name.text_value.intern]
+        names = []
+        names << first_name.text_value.intern unless first_name.empty?
+        remaining_names.elements.each { |n| names << n.local_variable.text_value.intern }
+        names
       end
     }
   end

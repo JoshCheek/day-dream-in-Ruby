@@ -60,22 +60,36 @@ RSpec.describe 'My language' do
 
     specify 'setters are method calls on the LHS of an assignment arrow'
 
-    specify 'parens are argument lists for blocks' do
-      parses! '@.m (x) x',
-        type:      :send_message,
-        receiver:  { type: :self },
-        name:      :m,
-        arguments: [],
-        block:     {
-          type:        :block,
-          param_names: [:x],
-          body:        { type: :local_variable, name: :x },
-        }
-      parses! '@.m a (x) x',
-        receiver:  { type: :self },
-        block:     { param_names: [:x] },
-        arguments: [{name: :a}],
-        name:      :m
+    describe 'blocks' do
+      specify 'parens are argument lists' do
+        parses! '@.m (x) x',
+          type:      :send_message,
+          receiver:  { type: :self },
+          name:      :m,
+          arguments: [],
+          block:     {
+            type:        :block,
+            param_names: [:x],
+            body:        { type: :local_variable, name: :x },
+          }
+        parses! '@.m a (x) x',
+          receiver:  { type: :self },
+          block:     { param_names: [:x] },
+          arguments: [{name: :a}],
+          name:      :m
+      end
+
+      specify 'argument lists can be empty' do
+        parses! '@.m () a',  block: { param_names: [] }
+        parses! '@.m (a) a', block: { param_names: [:a] }
+      end
+
+      specify 'arguments can be separated by commas' do
+        parses! '@.m (a,b) a', block: { param_names: [:a, :b] }
+        parses! '@.m (a, b ,c , d) a', block: { param_names: [:a, :b, :c, :d] }
+      end
+
+      specify 'the body is anything to the right of the argument list'
     end
   end
 
