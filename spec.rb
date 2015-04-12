@@ -22,14 +22,25 @@ module SpecHelpers
   end
 
   def ast!(ast, assertions)
+    asrts     = assertions.dup
     terminals = get_terminals ast
-    Array(assertions[:terminals_include]).each do |expected|
-      expect(terminals).to include expected
+    first     = terminals.first
+    if (expected = asrts.delete :first)
+      (type = expected.delete :type) and
+        expect(first.type_chain).to include type
+
+      (name = expected.delete :name) and
+        expect(first.name).to eq name
+
+      expect(expected).to be_empty
     end
+
+    # sanity
+    expect(asrts).to be_empty
   end
 
   def get_terminals(ast)
-    return ast.text_value if ast.terminal?
+    return ast if ast.terminal?
     ast.elements.flat_map { |child| get_terminals child }
   end
 end
@@ -45,17 +56,17 @@ RSpec.describe 'My language' do
 
   context 'parsing' do
     example 'sanity test: some basic parsing' do
-      parses! 'x', terminals_include: 'x'
+      parses! 'x', first: {name: 'x'}
     end
 
     example 'identifiers are lowercase a-z and underscores' do
-      parses! 'x',   expr: { type: :identifier, value: 'x' }
-      parses! '_',   expr: { type: :identifier, value: '_' }
-      parses! '_x_', expr: { type: :identifier, value: '_x_' }
-      parses! 'a_b', expr: { type: :identifier, value: 'a_b' }
-      parses! [*'a'..'z'].join, expr: {
-        type: :identifier,
-        value: 'abcdefghijklmnopqrstuvwxyz',
+      parses! 'x',   first: { type: :identifier, name: 'x' }
+      parses! '_',   first: { type: :identifier, name: '_' }
+      parses! '_x_', first: { type: :identifier, name: '_x_' }
+      parses! 'a_b', first: { type: :identifier, name: 'a_b' }
+      parses! [*'a'..'z'].join, first: {
+        type:  :identifier,
+        name: 'abcdefghijklmnopqrstuvwxyz',
       }
     end
 
