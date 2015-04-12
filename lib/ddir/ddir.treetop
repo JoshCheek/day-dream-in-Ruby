@@ -1,4 +1,4 @@
-grammar Whatevz
+grammar DdirLang
   rule body
     exprs:expressions {
       def to_ast

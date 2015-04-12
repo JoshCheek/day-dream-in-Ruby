@@ -2,8 +2,9 @@ require 'stringio'
 require 'ddir'
 
 module SpecHelpers
-  parser_class = Ddir.build_parser grammar_file: 'whatevz.treetop',
-                                   compile:      true
+  parser_class = Ddir.build_parser \
+    grammar_file: File.expand_path('../lib/ddir/ddir.treetop', __dir__),
+    compile:      true
 
   define_singleton_method(:parser_class) { parser_class }
 
