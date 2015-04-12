@@ -64,9 +64,12 @@ module DayDreamInRuby
 
   module Expressions1
     def to_ast
-      Ddir::Ast::Expressions.new elements.map { |el|
-        el.expression.to_ast
-      }
+      if elements.size == 1
+        elements.first.expression.to_ast
+      else
+        Ddir::Ast::Expressions.new \
+          elements.map { |el| el.expression.to_ast }
+      end
     end
   end
 

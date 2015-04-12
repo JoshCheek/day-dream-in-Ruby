@@ -11,7 +11,7 @@ module SpecHelpers
 
   def ast!(ast, assertions)
     asrts = assertions.dup
-    hash_assert ast.expressions.first, asrts.delete(:first)
+    hash_assert ast.first, asrts.delete(:first)
     expect(asrts).to be_empty
   end
 
