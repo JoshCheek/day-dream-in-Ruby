@@ -4,22 +4,46 @@ grammar Whatevz
   end
 
   rule expressions
-    (expression "\n"?)*
+    (sp expression sp nl?)*
   end
 
   rule expression
-    binary_operator / identifier
+    binary_expression / collapsible
   end
 
-  rule binary_operator
-    lhs:expression " " operator " " rhs:expression
+  rule binary_expression
+    collapsible sp operator sp collapsible
+  end
+
+  rule collapsible
+    variable / '(' sp expression sp ')'
+  end
+
+  rule variable
+    local_variable / instance_variable
+  end
+
+  rule local_variable
+    identifier
+  end
+
+  rule instance_variable
+    "@" identifier
   end
 
   rule identifier
-    "x"
+    [a-z]+
   end
 
   rule operator
     '+' / '-'
+  end
+
+  rule sp
+    ' '*
+  end
+
+  rule nl
+    "\n"
   end
 end
