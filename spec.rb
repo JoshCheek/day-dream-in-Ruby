@@ -15,22 +15,24 @@ module SpecHelpers
   end
 
   def parse(body, errstream: StringIO.new)
-    Parse body:         body,
-          parser_class: SpecHelpers.parser_class,
-          errstream:    errstream,
-          pry:          false
+    parse_tree = Parse body:         body,
+                       parser_class: SpecHelpers.parser_class,
+                       errstream:    errstream,
+                       pry:          false
+    parse_tree.to_ast
   end
 
   def ast!(ast, assertions)
-    asrts     = assertions.dup
-    terminals = get_terminals ast
-    first     = terminals.first
-    if (expected = asrts.delete :first)
-      (type = expected.delete :type) and
-        expect(first.type_chain).to include type
+    asrts = assertions.dup
+    first_ast = ast.expressions.first
 
-      (name = expected.delete :name) and
-        expect(first.name).to eq name
+    # assertions about the first node
+    if (expected = asrts.delete :first)
+      type = expected.delete :type
+      expect(first_ast.type).to eq type if type
+
+      name = expected.delete :name
+      expect(first_ast.name).to eq name if name
 
       expect(expected).to be_empty
     end
@@ -59,18 +61,17 @@ RSpec.describe 'My language' do
       parses! 'x', first: {name: 'x'}
     end
 
-    example 'identifiers are lowercase a-z and underscores' do
-      parses! 'x',   first: { type: :identifier, name: 'x' }
-      parses! '_',   first: { type: :identifier, name: '_' }
-      parses! '_x_', first: { type: :identifier, name: '_x_' }
-      parses! 'a_b', first: { type: :identifier, name: 'a_b' }
+    example 'local vars are made of lowercase a-z and underscores' do
+      parses! 'x',   first: { type: :local_variable, name: 'x' }
+      parses! '_',   first: { type: :local_variable, name: '_' }
+      parses! '_x_', first: { type: :local_variable, name: '_x_' }
+      parses! 'a_b', first: { type: :local_variable, name: 'a_b' }
       parses! [*'a'..'z'].join, first: {
-        type:  :identifier,
+        type:  :local_variable,
         name: 'abcdefghijklmnopqrstuvwxyz',
       }
     end
 
-    example 'local vars are bare identifiers'
     example 'ivars are identifiers with an @ prefix'
     example 'method calls are to the RHS of a "."'
     example 'lines beginning with method calls are invoked on the result of the previous line'

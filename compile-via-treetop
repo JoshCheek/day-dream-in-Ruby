@@ -1,103 +1,5 @@
 #!/usr/bin/env ruby
-
 require_relative 'helpers'
-require 'pp'
-
-class RubySyntax
-  def children
-    raise NotImplementedError, 'Override #children in subclasses'
-  end
-
-  def inspect
-    pretty_inspect
-  end
-
-  def pretty_print(pp)
-    classname = self.class.to_s.split('::').last
-    pp.text "#<#{classname}"
-    pp.group 2 do
-      pp.breakable '' # place inside so that if we break, we are indented
-      last_child = children.last
-      children.each do |child|
-        # it can break with a comma/newline, after any child except after the last
-        pp.pp child
-        pp.comma_breakable unless child == last_child
-      end
-    end
-    pp.breakable # can break after last child
-    pp.text '>'
-  end
-
-
-  class Body < RubySyntax
-    attr_accessor :expressions
-
-    def initialize(expressions)
-      self.expressions = expressions # expressions node, not a collection
-    end
-
-    def children
-      [expressions]
-    end
-  end
-
-
-  class Expressions < RubySyntax
-    include Enumerable
-
-    attr_accessor :expressions
-
-    def initialize(expressions)
-      self.expressions = expressions
-    end
-
-    def each(&block)
-      expressions.each(&block)
-    end
-
-    def children
-      expressions
-    end
-  end
-
-
-  class BinaryExpression < RubySyntax
-    attr_accessor :left_child, :operator, :right_Child
-    def initialize(left_child, operator, right_Child)
-      self.left_child  = left_child
-      self.operator    = operator
-      self.right_Child = right_Child
-    end
-
-    def children
-      [left_child, operator, right_Child]
-    end
-  end
-
-
-  class Variable < RubySyntax
-    attr_accessor :name
-    def initialize(name)
-      self.name = name
-    end
-
-    def children
-      []
-    end
-
-    def pretty_print(pp)
-      classname = self.class.to_s.split('::').last
-      pp.text "#<#{classname} #{name.inspect}>"
-    end
-  end
-
-  class LocalVariable < Variable
-  end
-
-  class InstanceVariable < Variable
-  end
-end
-
 
 build_opts = {
   grammar_file: 'whatevz.treetop',
@@ -141,9 +43,8 @@ else
     x - @y
     x - @y
   BODY
-  on_finish = lambda { |parse_tree|
-    p parse_tree.to_ast
-  }
+
+  on_finish = lambda { |parse_tree| p parse_tree.to_ast }
 end
 
 parse_opts[:parser_class] = BuildTheParser build_opts
