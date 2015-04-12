@@ -57,10 +57,6 @@ RSpec.describe 'My language' do
   end
 
   context 'parsing' do
-    example 'sanity test: some basic parsing' do
-      parses! 'x', first: {name: 'x'}
-    end
-
     example 'local vars are identifiers: made of lowercase a-z and underscores' do
       parses! 'x',   first: { type: :local_variable, name: 'x' }
       parses! '_',   first: { type: :local_variable, name: '_' }
@@ -80,7 +76,15 @@ RSpec.describe 'My language' do
       parses! '@', first: { type: :self }
     end
 
-    example 'method calls are to the RHS of a "."'
+    example 'method calls are to the RHS of a "."' do
+      pending
+      parses! 'a.b', first: {
+        type:      :send,
+        target:    { type: :local_variable, name: 'a' },
+        name:      'b',
+        arguments: [],
+      }
+    end
 
     example 'lines beginning with method calls are invoked on the result of the previous line'
     example 'setters are method calls on the LHS of an assignment arrow'

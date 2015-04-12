@@ -18,27 +18,30 @@ grammar Whatevz
   end
 
   rule expression
-    expression:(binary_expression / syntax_unit) {
+    head:(variable / self)
+    tail:expression_modifiers? {
       def to_ast
-        expression.to_ast
+        ast = head.to_ast
+        ast = tail.to_ast ast unless tail.empty?
+        ast
       end
     }
   end
 
-  rule binary_expression
-    lhs:syntax_unit sp operator sp rhs:syntax_unit {
-      def to_ast
-        RubySyntax::BinaryExpression.new lhs.to_ast,
+  rule expression_modifiers
+    sp binary_op_call {
+      def to_ast(to_modify)
+        binary_op_call.to_ast to_modify
+      end
+    }
+  end
+
+  rule binary_op_call
+    operator sp rhs:expression {
+      def to_ast(target)
+        RubySyntax::BinaryExpression.new target,
                                          operator.text_value,
                                          rhs.to_ast
-      end
-    }
-  end
-
-  rule syntax_unit
-    unit:(variable / self) {
-      def to_ast
-        unit.to_ast
       end
     }
   end
