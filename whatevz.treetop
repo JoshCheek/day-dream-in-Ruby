@@ -1,0 +1,25 @@
+grammar Whatevz
+  rule body
+    expressions
+  end
+
+  rule expressions
+    (expression "\n"?)*
+  end
+
+  rule expression
+    binary_operator / identifier
+  end
+
+  rule binary_operator
+    lhs:expression " " operator " " rhs:expression
+  end
+
+  rule identifier
+    "x"
+  end
+
+  rule operator
+    '+' / '-'
+  end
+end

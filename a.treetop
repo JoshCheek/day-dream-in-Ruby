@@ -1,0 +1,17 @@
+grammar A
+  rule operator_sequence
+    single_element (operator operator_sequence)*
+  end
+
+  rule single_element
+    '(' operator_sequence ')' / num
+  end
+
+  rule num
+    [0-9]+
+  end
+
+  rule operator
+    "+"
+  end
+end

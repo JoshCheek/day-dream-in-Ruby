@@ -1,0 +1,37 @@
+-> (x) x + x
+
+-> :A
+  @.attr_reader :x :y
+  @.attr_writer :z
+  @.attr_accessor :z2
+
+  -> :initialize (@x, y, @z:100, z2:)
+    @.y <- y
+    @z2 <- z2
+
+  -> :inline_body () 1 + 2
+
+  -> :multiline_body
+    from_literal <- 123
+    from_local   <- from_literal
+    from_ivar    <- @z
+    from_method  <- @.z
+    from_literal + from_local + from_ivar + from_method
+
+  -> :chaining_with_blocks
+    [*'a'..'c']
+      .map (c) c.upcase
+      .map (c)
+        c.downcase
+         .upcase
+         .chars.join '.'
+      .map (c.downcase)
+      .map (c*2)
+      .map.with_index (c.upcase, i*2)
+      .each.with_object "" ((char.downcase, index/2), str)
+        if index.even?
+          str << "#{index}: #{char}"
+        else
+          str << "nothin"
+      .chars.each_slice 2 (c1, c2) c1 + c2
+      .chars.each_slice 2 (c1 + c2)

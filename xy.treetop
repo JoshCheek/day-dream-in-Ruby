@@ -1,0 +1,17 @@
+grammar Xy
+  rule xy
+    thex they
+  end
+
+  rule thex
+    "x" <Wat> {
+      def zomg
+        binding.pry
+      end
+    }
+  end
+
+  rule they
+    "y"
+  end
+end

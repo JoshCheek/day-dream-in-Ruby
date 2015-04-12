@@ -1,0 +1,94 @@
+#!/usr/bin/env ruby
+$LOAD_PATH.unshift File.expand_path(__dir__)
+require 'treetop'
+
+options = {}
+
+at_exit { puts Lang.new(options).compile.inspect }
+
+if ARGV.include? 'p'
+  require 'pry'
+  options[:pry] = true
+end
+
+if ARGV.include? 'xy'
+  options[:grammar_file] = 'xy.treetop'
+  options[:body]         = 'xy'
+elsif ARGV.include? 'a'
+  options[:grammar_file] = 'a.treetop'
+  options[:body]   = '1+1+(2+2)+3+((5+5)+((6)))'
+else
+  options[:grammar_file] = 'whatevz.treetop'
+  options[:body]   = <<-BODY.gsub(/^    /, '')
+    x + x
+    x - @y
+    (x+x) + (y+y)
+  BODY
+  ARGV.include? 'real' and
+    options[:body] = File.read('input')
+end
+
+
+
+class Lang
+  attr_reader :body, :parser
+
+  def initialize(body: body, pry: false, grammar_file:)
+    @body         = body
+    @pry          = pry
+    @parser       = parser
+    @grammar_file = grammar_file
+    @parser_file  = "#@grammar_file.generated.rb"
+  end
+
+  def compile
+    # compile grammar
+    rb_grammar = Treetop::Compiler::GrammarCompiler.new.ruby_source(@grammar_file)
+    File.write @parser_file, rb_grammar
+    load @parser_file
+    constant_name    = rb_grammar.strip.lines.first[/[A-Z]\w*/]
+    parser_classname = "#{constant_name}Parser"
+    parser           = Object.const_get(parser_classname).new
+
+    # parse body
+    result = parser.parse body
+
+    # handle errors
+    unless result
+      result = parser.parse body, consume_all_input: false
+      print_failure(body, result, parser)
+      raise "Failed to parse!"
+    end
+    result
+  ensure
+    binding.pry if @pry
+  end
+
+  private
+
+  def print_failure(body, result, parser)
+    print_fail_pair :body                       , body
+    print_fail_pair :terminal_failures          , parser.terminal_failures
+    print_fail_pair :root                       , parser.root
+    print_fail_pair :index                      , parser.index
+    print_fail_pair :max_terminal_failure_index , parser.max_terminal_failure_index
+    print_fail_pair :failure_column             , parser.failure_column
+    print_fail_pair :failure_index              , parser.failure_index
+    print_fail_pair :failure_line               , parser.failure_line
+    print_fail_pair :failure_reason             , parser.failure_reason
+    print_fail_pair :result                     , result
+    print_fail_pair :input                      , parser.input
+  end
+
+  def print_fail_pair(key, value)
+    val = value.inspect.gsub(/^/, '  ')
+
+    if val.lines.length == 1
+      val = " " * (30 - key.length - 2) + val
+    else
+      val = "\n" + val
+    end
+
+    puts "\e[31m #{key} \e[39m#{val}"
+  end
+end
