@@ -1,5 +1,13 @@
 require 'treetop'
 
+def BuildTheParser(opts)
+  BuildTheParser.new(opts).call
+end
+
+def Parse(opts)
+  Parse.new(opts).parse
+end
+
 class BuildTheParser
   def initialize(grammar_file:, compile:)
     @grammar_file = grammar_file
@@ -7,7 +15,7 @@ class BuildTheParser
     @compile      = compile
   end
 
-  def parser_class
+  def call
     compile! if @compile
     load_file
   end
@@ -24,10 +32,6 @@ class BuildTheParser
     namespace  = Module.new
     namespace.class_eval definition, @parser_file
   end
-end
-
-def Parse(opts)
-  Parse.new(opts).parse
 end
 
 class Parse

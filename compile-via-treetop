@@ -14,7 +14,7 @@ parse_opts = {
 }
 
 at_exit do
-  parse_opts[:parser_class] = BuildTheParser.new(build_opts).parser_class
+  parse_opts[:parser_class] = BuildTheParser build_opts
   p Parse parse_opts
 end
 
