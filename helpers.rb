@@ -163,6 +163,13 @@ class RubySyntax
   end
 
 
+  class Self < RubySyntax
+    def children
+      []
+    end
+  end
+
+
   class Variable < RubySyntax
     attr_accessor :name
     def initialize(name)

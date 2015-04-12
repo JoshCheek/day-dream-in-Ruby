@@ -36,9 +36,17 @@ grammar Whatevz
   end
 
   rule syntax_unit
-    unit:variable {
+    unit:(variable / self) {
       def to_ast
         unit.to_ast
+      end
+    }
+  end
+
+  rule self
+    "@" {
+      def to_ast
+        RubySyntax::Self.new
       end
     }
   end

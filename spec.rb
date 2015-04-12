@@ -61,7 +61,7 @@ RSpec.describe 'My language' do
       parses! 'x', first: {name: 'x'}
     end
 
-    example 'local vars are made of lowercase a-z and underscores' do
+    example 'local vars are identifiers: made of lowercase a-z and underscores' do
       parses! 'x',   first: { type: :local_variable, name: 'x' }
       parses! '_',   first: { type: :local_variable, name: '_' }
       parses! '_x_', first: { type: :local_variable, name: '_x_' }
@@ -72,8 +72,16 @@ RSpec.describe 'My language' do
       }
     end
 
-    example 'ivars are identifiers with an @ prefix'
+    example 'ivars are identifiers with an @ prefix' do
+      parses! '@x', first: { type: :instance_variable, name: '@x' }
+    end
+
+    example 'self is indicated with an "@"' do
+      parses! '@', first: { type: :self }
+    end
+
     example 'method calls are to the RHS of a "."'
+
     example 'lines beginning with method calls are invoked on the result of the previous line'
     example 'setters are method calls on the LHS of an assignment arrow'
   end
