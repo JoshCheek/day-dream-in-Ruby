@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
-require_relative 'helpers'
+$LOAD_PATH.unshift File.expand_path('lib', __dir__)
+require 'ddir'
 
 parse_opts = {
   errstream:    $stderr,
-  parser_class: BuildTheParser(grammar_file: 'whatevz.treetop', compile: true),
+  parser_class: Ddir.build_parser(grammar_file: 'whatevz.treetop', compile: true),
   body:         <<-BODY.gsub(/^\s*/, ''),
     x + x
     x - @y
@@ -19,4 +20,4 @@ if ARGV.include? 'zomg'
   parse_opts[:body] = File.read 'zomg'
 end
 
-p Parse(parse_opts).to_ast
+p Ddir.parse parse_opts

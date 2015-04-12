@@ -2,7 +2,7 @@ grammar Whatevz
   rule body
     exprs:expressions {
       def to_ast
-        RubySyntax::Body.new exprs.to_ast
+        Ddir::Ast::Body.new exprs.to_ast
       end
     }
   end
@@ -10,7 +10,7 @@ grammar Whatevz
   rule expressions
     (sp expression sp nl?)* {
       def to_ast
-        RubySyntax::Expressions.new elements.map { |el|
+        Ddir::Ast::Expressions.new elements.map { |el|
           el.expression.to_ast
         }
       end
@@ -41,10 +41,7 @@ grammar Whatevz
   rule send_message
     "." method_name:identifier {
       def to_ast(receiver)
-        RubySyntax::SendMessage.new(
-          receiver,
-          method_name.text_value
-        )
+        Ddir::Ast::SendMessage.new receiver, method_name.text_value
       end
     }
   end
@@ -52,9 +49,9 @@ grammar Whatevz
   rule binary_op_call
     operator sp rhs:expression {
       def to_ast(lhs)
-        RubySyntax::BinaryExpression.new lhs,
-                                         operator.text_value,
-                                         rhs.to_ast
+        Ddir::Ast::BinaryExpression.new lhs,
+                                        operator.text_value,
+                                        rhs.to_ast
       end
     }
   end
@@ -62,7 +59,7 @@ grammar Whatevz
   rule self
     "@" {
       def to_ast
-        RubySyntax::Self.new
+        Ddir::Ast::Self.new
       end
     }
   end
@@ -78,7 +75,7 @@ grammar Whatevz
   rule local_variable
     identifier {
       def to_ast
-        RubySyntax::LocalVariable.new text_value
+        Ddir::Ast::LocalVariable.new text_value
       end
     }
   end
@@ -86,7 +83,7 @@ grammar Whatevz
   rule instance_variable
     "@" identifier {
       def to_ast
-        RubySyntax::InstanceVariable.new text_value
+        Ddir::Ast::InstanceVariable.new text_value
       end
     }
   end

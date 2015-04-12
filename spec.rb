@@ -1,10 +1,9 @@
 require 'stringio'
-require_relative 'helpers'
+require 'ddir'
 
 module SpecHelpers
-  parser_class = BuildTheParser \
-    grammar_file: 'whatevz.treetop',
-    compile:      true
+  parser_class = Ddir.build_parser grammar_file: 'whatevz.treetop',
+                                   compile:      true
 
   define_singleton_method(:parser_class) { parser_class }
 
@@ -13,10 +12,9 @@ module SpecHelpers
   end
 
   def parse(body, errstream: StringIO.new)
-    parse_tree = Parse body:         body,
-                       parser_class: SpecHelpers.parser_class,
-                       errstream:    errstream
-    parse_tree.to_ast
+    Ddir.parse body:         body,
+               parser_class: SpecHelpers.parser_class,
+               errstream:    errstream
   end
 
   def ast!(ast, assertions)
