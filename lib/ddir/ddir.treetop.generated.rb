@@ -1,4 +1,6 @@
-module DdirLang
+require 'treetop/runtime'
+
+module DayDreamInRuby
   include Treetop::Runtime
 
   def root
@@ -673,7 +675,7 @@ module DdirLang
 
 end
 
-class DdirLangParser < Treetop::Runtime::CompiledParser
-  include DdirLang
+class DayDreamInRubyParser < Treetop::Runtime::CompiledParser
+  include DayDreamInRuby
 end
 

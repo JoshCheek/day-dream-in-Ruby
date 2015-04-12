@@ -7,9 +7,8 @@ $LOAD_PATH.unshift lib_dir
 require 'ddir'
 
 parse_opts = {
-  errstream:    $stderr,
-  parser_class: Ddir.build_parser(grammar_file: grammar_file, compile: true),
-  body:         <<-BODY.gsub(/^\s*/, ''),
+  errstream: $stderr,
+  body:      <<-BODY.gsub(/^\s*/, ''),
     x + x
     x - @y
     x - @y

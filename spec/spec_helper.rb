@@ -2,20 +2,12 @@ require 'stringio'
 require 'ddir'
 
 module SpecHelpers
-  parser_class = Ddir.build_parser \
-    grammar_file: File.expand_path('../lib/ddir/ddir.treetop', __dir__),
-    compile:      true
-
-  define_singleton_method(:parser_class) { parser_class }
-
   def parses!(body, assertions)
     ast! parse(body, errstream: $stderr), assertions
   end
 
   def parse(body, errstream: StringIO.new)
-    Ddir.parse body:         body,
-               parser_class: SpecHelpers.parser_class,
-               errstream:    errstream
+    Ddir.parse body: body, errstream: errstream
   end
 
   def ast!(ast, assertions)

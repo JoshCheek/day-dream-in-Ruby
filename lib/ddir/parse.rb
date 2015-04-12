@@ -3,15 +3,35 @@ module Ddir
     Parse.new(opts).parse.to_ast
   end
 
+  # locate relevant files, check their times
+  grammar_filename = File.expand_path 'ddir.treetop', __dir__
+  parser_filename  = File.expand_path 'ddir.treetop.generated.rb', __dir__
+  grammer_changed  = File.mtime grammar_filename
+  parser_generated = File.mtime parser_filename
+
+  # recompile the parser if it is out of date
+  if parser_generated < grammer_changed
+    require 'treetop'
+    File.write(
+      parser_filename,
+      Treetop::Compiler::GrammarCompiler.new.ruby_source(grammar_filename)
+    )
+  end
+
+  # load the parser to a constnat we choose
+  TreetopParser = Module.new.module_eval(
+    File.read(parser_filename),
+    parser_filename
+  )
+
   class Parse
-    def initialize(body:, parser_class:, errstream:$stderr)
+    def initialize(body:, errstream:$stderr)
       self.body         = body
       self.errstream    = errstream
-      self.parser_class = parser_class
     end
 
     def parse
-      parser = parser_class.new
+      parser = TreetopParser.new
       result = parser.parse body
       return result if result
       result = parser.parse body, consume_all_input: false # more informative
@@ -21,7 +41,7 @@ module Ddir
 
     private
 
-    attr_accessor :parser_class, :errstream, :body
+    attr_accessor :errstream, :body
 
     def print_failure(body, result, parser)
       print_fail_pair :body                       , body

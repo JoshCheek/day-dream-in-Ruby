@@ -1,4 +1,7 @@
-grammar DdirLang
+require 'treetop/runtime'
+
+grammar DayDreamInRuby
+
   rule body
     exprs:expressions {
       def to_ast
