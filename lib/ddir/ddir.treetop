@@ -44,12 +44,30 @@ grammar DayDreamInRuby
   end
 
   rule send_message
-    "." name:identifier args:(sp expression)* {
+    "." name:identifier args:(sp expression)* sp? maybe_block:block? {
       def to_ast(receiver)
         Ddir::Ast::SendMessage.new \
           receiver,
           name.text_value.intern,
-          args.elements.map { |arg| arg.expression.to_ast }
+          args.elements.map { |arg| arg.expression.to_ast },
+          (maybe_block.to_ast unless maybe_block.empty?)
+      end
+    }
+  end
+
+  rule block
+    '(' params ')' sp? body:expression {
+      def to_ast
+        Ddir::Ast::Block.new params.ordered_names,
+                             body.to_ast
+      end
+    }
+  end
+
+  rule params
+    param_name:local_variable {
+      def ordered_names
+        [param_name.text_value.intern]
       end
     }
   end

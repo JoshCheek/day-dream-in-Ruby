@@ -80,6 +80,31 @@ module Ddir
     end
 
 
+    class SendMessage < Ast
+      attr_accessor :receiver, :name, :arguments, :block
+
+      def initialize(receiver, name, arguments, block)
+        self.receiver  = receiver
+        self.name      = name
+        self.arguments = arguments
+        self.block     = block
+      end
+
+      def children
+        [receiver, '.', name, arguments]
+      end
+    end
+
+
+    class Block < Ast
+      attr_accessor :param_names, :body
+      def initialize(param_names, body)
+        self.param_names = param_names
+        self.body        = body
+      end
+    end
+
+
     class Self < Ast
       def children
         []
@@ -103,23 +128,10 @@ module Ddir
       end
     end
 
-    class SendMessage < Ast
-      attr_accessor :receiver, :name, :arguments, :block
-
-      def initialize(receiver, name, arguments)
-        self.receiver  = receiver
-        self.name      = name
-        self.arguments = arguments
-        self.block     = nil
-      end
-
-      def children
-        [receiver, '.', name, arguments]
-      end
-    end
 
     class LocalVariable < Variable
     end
+
 
     class InstanceVariable < Variable
     end

@@ -33,9 +33,13 @@ module SpecHelpers
       when Hash
         recursive_assert actual, expected
       when Array
-        actual.zip(expected) { |actual_at_index, expected_at_index|
-          recursive_assert actual_at_index, expected_at_index
-        }
+        if actual == expected
+          expect(actual).to eq expected
+        else
+          actual.zip(expected) { |actual_at_index, expected_at_index|
+            recursive_assert actual_at_index, expected_at_index
+          }
+        end
       else
         expect(actual).to eq expected
       end

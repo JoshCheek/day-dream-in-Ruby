@@ -295,6 +295,10 @@ module DayDreamInRuby
     def args
       elements[2]
     end
+
+    def maybe_block
+      elements[4]
+    end
   end
 
   module SendMessage2
@@ -302,7 +306,8 @@ module DayDreamInRuby
       Ddir::Ast::SendMessage.new \
         receiver,
         name.text_value.intern,
-        args.elements.map { |arg| arg.expression.to_ast }
+        args.elements.map { |arg| arg.expression.to_ast },
+        (maybe_block.to_ast unless maybe_block.empty?)
     end
   end
 
@@ -354,6 +359,24 @@ module DayDreamInRuby
         end
         r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
         s0 << r3
+        if r3
+          r8 = _nt_sp
+          if r8
+            r7 = r8
+          else
+            r7 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r7
+          if r7
+            r10 = _nt_block
+            if r10
+              r9 = r10
+            else
+              r9 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s0 << r9
+          end
+        end
       end
     end
     if s0.last
@@ -366,6 +389,124 @@ module DayDreamInRuby
     end
 
     node_cache[:send_message][start_index] = r0
+
+    r0
+  end
+
+  module Block0
+    def params
+      elements[1]
+    end
+
+    def body
+      elements[4]
+    end
+  end
+
+  module Block1
+    def to_ast
+      Ddir::Ast::Block.new params.ordered_names,
+                           body.to_ast
+    end
+  end
+
+  def _nt_block
+    start_index = index
+    if node_cache[:block].has_key?(index)
+      cached = node_cache[:block][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('(', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure('(')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r2 = _nt_params
+      s0 << r2
+      if r2
+        if has_terminal?(')', false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure(')')
+          r3 = nil
+        end
+        s0 << r3
+        if r3
+          r5 = _nt_sp
+          if r5
+            r4 = r5
+          else
+            r4 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r4
+          if r4
+            r6 = _nt_expression
+            s0 << r6
+          end
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Block0)
+      r0.extend(Block1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:block][start_index] = r0
+
+    r0
+  end
+
+  module Params0
+    def param_name
+      elements[0]
+    end
+  end
+
+  module Params1
+    def ordered_names
+      [param_name.text_value.intern]
+    end
+  end
+
+  def _nt_params
+    start_index = index
+    if node_cache[:params].has_key?(index)
+      cached = node_cache[:params][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_local_variable
+    s0 << r1
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Params0)
+      r0.extend(Params1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:params][start_index] = r0
 
     r0
   end

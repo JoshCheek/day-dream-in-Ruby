@@ -57,20 +57,25 @@ RSpec.describe 'My language' do
     end
 
     specify 'lines beginning with method calls are invoked on the result of the previous line'
+
     specify 'setters are method calls on the LHS of an assignment arrow'
+
     specify 'parens are argument lists for blocks' do
-      pending
-      parses! '@.m (x) x', first: {
-        type:     :send_message,
-        receiver: { type: :self },
-        name:     :m,
-        argument: [],
-        block:    {
-          type:      :block,
-          arguments: [:x],
-          body:      { type: :local_variable, name: :x }
+      parses! '@.m (x) x',
+        type:      :send_message,
+        receiver:  { type: :self },
+        name:      :m,
+        arguments: [],
+        block:     {
+          type:        :block,
+          param_names: [:x],
+          body:        { type: :local_variable, name: :x },
         }
-      }
+      parses! '@.m a (x) x',
+        receiver:  { type: :self },
+        block:     { param_names: [:x] },
+        arguments: [{name: :a}],
+        name:      :m
     end
   end
 
