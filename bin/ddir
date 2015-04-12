@@ -1,9 +1,5 @@
 #!/usr/bin/env ruby
-root_dir     = File.expand_path('..', __dir__)
-lib_dir      = File.join root_dir, 'lib'
-grammar_file = File.join lib_dir, 'ddir/ddir.treetop'
-
-$LOAD_PATH.unshift lib_dir
+$LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'ddir'
 
 parse_opts = {

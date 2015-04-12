@@ -58,11 +58,13 @@ module Ddir
     end
 
     def print_fail_pair(key, value)
-      val = value.inspect.gsub(/^/, '  ')
-      whitespace = (val.lines.length == 1) ?
-                     " " * (30 - key.length - 2) :
-                     "\n"
-      errstream.puts "\e[31m #{key} \e[39m#{whitespace}#{val}"
+      inspected_value = value.inspect.gsub(/^/, '  ')
+      whitespace = if inspected_value.lines.length == 1
+        " " * (30 - key.length - 2)
+      else
+        "\n"
+      end
+      errstream.puts "\e[31m #{key} \e[39m#{whitespace}#{inspected_value}"
     end
   end
 end

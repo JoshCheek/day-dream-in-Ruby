@@ -1,4 +1,3 @@
-require 'stringio'
 require 'ddir'
 
 module SpecHelpers
@@ -6,15 +5,14 @@ module SpecHelpers
     ast! parse(body, errstream: $stderr), assertions
   end
 
-  def parse(body, errstream: StringIO.new)
+  def parse(body, errstream: $stderr)
     Ddir.parse body: body, errstream: errstream
   end
 
   def ast!(ast, assertions)
     asrts = assertions.dup
-    first = ast.expressions.first
-    hash_assert first, asrts.delete(:first) # first
-    expect(asrts).to be_empty # sanity
+    hash_assert ast.expressions.first, asrts.delete(:first)
+    expect(asrts).to be_empty
   end
 
   def get_terminals(ast)
@@ -36,4 +34,5 @@ end
 
 RSpec.configure do |config|
   config.include SpecHelpers
+  config.disable_monkey_patching!
 end
