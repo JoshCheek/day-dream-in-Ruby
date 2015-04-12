@@ -36,8 +36,7 @@ class BuildTheParser
 end
 
 class Parse
-  def initialize(body:, parser_class:, pry: false, errstream:$stderr)
-    self.pry          = pry
+  def initialize(body:, parser_class:, errstream:$stderr)
     self.body         = body
     self.errstream    = errstream
     self.parser_class = parser_class
@@ -50,15 +49,11 @@ class Parse
     result = parser.parse body, consume_all_input: false # more informative
     print_failure(body, result, parser)
     raise "Failed to parse!"
-  ensure
-    binding.pry if pry?
   end
 
   private
 
-  attr_accessor :pry, :parser_class, :errstream, :body
-
-  alias pry? pry
+  attr_accessor :parser_class, :errstream, :body
 
   def print_failure(body, result, parser)
     print_fail_pair :body                       , body

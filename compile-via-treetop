@@ -1,52 +1,22 @@
 #!/usr/bin/env ruby
 require_relative 'helpers'
 
-build_opts = {
-  grammar_file: 'whatevz.treetop',
-  compile:      true, # recompile every time
-}
-
 parse_opts = {
-  parser_class: :placeholder,
-  body:         :placeholder,
-  pry:          false,
   errstream:    $stderr,
-}
-
-on_finish = lambda { |parse_tree| p parse_tree }
-
-# pass "p" on argv to get pry inserted
-if ARGV.include? 'p'
-  require 'pry'
-  parse_opts[:pry] = true
-end
-
-# doubt I'll ever get to this point, but w/e!
-if ARGV.include? 'real'
-  parse_opts[:body] = File.read 'input'
-end
-
-# choose amongst the parsers
-if ARGV.include? 'xy'
-  Wat = Module.new
-  build_opts[:grammar_file] = 'xy.treetop'
-  parse_opts[:body]         = 'xy'
-elsif ARGV.include? 'a'
-  build_opts[:grammar_file] = 'a.treetop'
-  parse_opts[:body]   = '1+1+(2+2)+3+((5+5)+((6)))'
-else
-  build_opts[:grammar_file] = 'whatevz.treetop'
-  parse_opts[:body]   = <<-BODY.gsub(/^    /, '')
+  parser_class: BuildTheParser(grammar_file: 'whatevz.treetop', compile: true),
+  body:         <<-BODY.gsub(/^\s*/, ''),
     x + x
     x - @y
     x - @y
     x - @y
     x - @y
+    abc.def.ghi
   BODY
-  parse_opts[:body] = 'a.b.c'
+}
 
-  on_finish = lambda { |parse_tree| p parse_tree.to_ast }
+# doubt I'll ever get to this point, but w/e!
+if ARGV.include? 'zomg'
+  parse_opts[:body] = File.read 'zomg'
 end
 
-parse_opts[:parser_class] = BuildTheParser build_opts
-on_finish[Parse parse_opts]
+p Parse(parse_opts).to_ast

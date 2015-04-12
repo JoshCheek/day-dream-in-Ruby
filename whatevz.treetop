@@ -29,9 +29,8 @@ grammar Whatevz
   end
 
   rule expression_modifiers
-    (
-      (sp  modifier:binary_op_call) /
-      (    modifier:send_message)
+    ( (sp modifier:binary_op_call)
+    / (   modifier:send_message)
     ) {
       def to_ast(to_modify)
         modifier.to_ast to_modify

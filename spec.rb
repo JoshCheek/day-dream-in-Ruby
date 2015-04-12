@@ -2,13 +2,11 @@ require 'stringio'
 require_relative 'helpers'
 
 module SpecHelpers
-  class << self
-    attr_accessor :parser_class
-  end
-
-  @parser_class = BuildTheParser \
+  parser_class = BuildTheParser \
     grammar_file: 'whatevz.treetop',
     compile:      true
+
+  define_singleton_method(:parser_class) { parser_class }
 
   def parses!(body, assertions)
     ast! parse(body, errstream: $stderr), assertions
@@ -17,20 +15,15 @@ module SpecHelpers
   def parse(body, errstream: StringIO.new)
     parse_tree = Parse body:         body,
                        parser_class: SpecHelpers.parser_class,
-                       errstream:    errstream,
-                       pry:          false
+                       errstream:    errstream
     parse_tree.to_ast
   end
 
   def ast!(ast, assertions)
     asrts = assertions.dup
     first = ast.expressions.first
-
-    # first
-    hash_assert first, asrts.delete(:first)
-
-    # sanity
-    expect(asrts).to be_empty
+    hash_assert first, asrts.delete(:first) # first
+    expect(asrts).to be_empty # sanity
   end
 
   def get_terminals(ast)
