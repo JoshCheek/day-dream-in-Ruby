@@ -10,7 +10,7 @@ grammar DayDreamInRuby
   end
 
   rule expressions
-    (sp expression sp nl?)* {
+    (sp? expression sp? nl?)* {
       def to_ast
         if elements.size == 1
           elements.first.expression.to_ast
@@ -34,7 +34,7 @@ grammar DayDreamInRuby
   end
 
   rule expression_modifiers
-    ( (sp modifier:binary_op_call)
+    ( (sp? modifier:binary_op_call)
     / (   modifier:send_message)
     ) {
       def to_ast(to_modify)
@@ -44,15 +44,18 @@ grammar DayDreamInRuby
   end
 
   rule send_message
-    "." method_name:identifier {
+    "." name:identifier args:(sp expression)* {
       def to_ast(receiver)
-        Ddir::Ast::SendMessage.new receiver, method_name.text_value.intern
+        Ddir::Ast::SendMessage.new \
+          receiver,
+          name.text_value.intern,
+          args.elements.map { |arg| arg.expression.to_ast }
       end
     }
   end
 
   rule binary_op_call
-    operator sp rhs:expression {
+    operator sp? rhs:expression {
       def to_ast(lhs)
         Ddir::Ast::BinaryExpression.new lhs,
                                         operator.text_value,
@@ -102,7 +105,7 @@ grammar DayDreamInRuby
   end
 
   rule sp
-    ' '*
+    ' '+
   end
 
   rule nl

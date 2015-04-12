@@ -6,34 +6,31 @@ RSpec.describe 'My language' do
   end
 
   context 'parsing' do
-    example 'local vars are identifiers: made of lowercase a-z and underscores' do
-      parses! 'x',   first: { type: :local_variable, name: :x }
-      parses! '_',   first: { type: :local_variable, name: :_ }
-      parses! '_x_', first: { type: :local_variable, name: :_x_ }
-      parses! 'a_b', first: { type: :local_variable, name: :a_b }
-      parses! [*'a'..'z'].join, first: {
-        type: :local_variable,
-        name: :abcdefghijklmnopqrstuvwxyz,
-      }
+    specify 'local vars are identifiers: made of lowercase a-z and underscores' do
+      parses! 'x',   type: :local_variable, name: :x
+      parses! '_',   type: :local_variable, name: :_
+      parses! '_x_', type: :local_variable, name: :_x_
+      parses! 'a_b', type: :local_variable, name: :a_b
+      parses! [*'a'..'z'].join, type: :local_variable,
+                                name: :abcdefghijklmnopqrstuvwxyz
     end
 
-    example 'ivars are identifiers with an @ prefix' do
-      parses! '@x', first: { type: :instance_variable, name: :@x }
+    specify 'ivars are identifiers with an @ prefix' do
+      parses! '@x', type: :instance_variable, name: :@x
     end
 
-    example 'self is indicated with an "@"' do
-      parses! '@', first: { type: :self }
+    specify 'self is indicated with an "@"' do
+      parses! '@', type: :self
     end
 
-    example 'method calls are to the RHS of a "."' do
-      parses! 'a.b', first: {
+    specify 'method calls are to the RHS of a "."' do
+      parses! 'a.b',
         type:      :send_message,
         receiver:  { type: :local_variable, name: :a },
         name:      :b,
         block:     nil,
-        arguments: [],
-      }
-      parses! 'x.y.z', first: {
+        arguments: []
+      parses! 'x.y.z',
         type:      :send_message,
         name:      :z,
         arguments: [],
@@ -44,13 +41,24 @@ RSpec.describe 'My language' do
           arguments: [],
           block:     nil,
           receiver:  { type: :local_variable, name: :x },
-        },
-      }
+        }
     end
 
-    example 'lines beginning with method calls are invoked on the result of the previous line'
-    example 'setters are method calls on the LHS of an assignment arrow'
-    example 'parens are argument lists for blocks' do
+    specify 'spaces delimit method arguments' do
+      parses! '@.a b c',
+        type:     :send_message,
+        receiver: {type: :self},
+        name:     :a,
+        block:    nil,
+        arguments: [
+          {type: :local_variable, name: :b},
+          {type: :local_variable, name: :c},
+        ]
+    end
+
+    specify 'lines beginning with method calls are invoked on the result of the previous line'
+    specify 'setters are method calls on the LHS of an assignment arrow'
+    specify 'parens are argument lists for blocks' do
       pending
       parses! '@.m (x) x', first: {
         type:     :send_message,

@@ -106,15 +106,15 @@ module Ddir
     class SendMessage < Ast
       attr_accessor :receiver, :name, :arguments, :block
 
-      def initialize(receiver, name)
+      def initialize(receiver, name, arguments)
         self.receiver  = receiver
         self.name      = name
-        self.arguments = []
+        self.arguments = arguments
         self.block     = nil
       end
 
       def children
-        [receiver, '.', name]
+        [receiver, '.', name, arguments]
       end
     end
 

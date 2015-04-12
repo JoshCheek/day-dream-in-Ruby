@@ -9,10 +9,16 @@ module SpecHelpers
     Ddir.parse body: body, errstream: errstream
   end
 
-  def ast!(ast, assertions)
-    asrts = assertions.dup
-    hash_assert ast.first, asrts.delete(:first)
-    expect(asrts).to be_empty
+  def ast!(ast, positional_assertions)
+     positional_assertions = if positional_assertions.kind_of? Array
+      positional_assertions
+    else
+      [positional_assertions]
+    end
+
+    positional_assertions.each_with_index do |assertions, index|
+      recursive_assert ast.children[index], assertions
+    end
   end
 
   def get_terminals(ast)
@@ -20,11 +26,16 @@ module SpecHelpers
     ast.elements.flat_map { |child| get_terminals child }
   end
 
-  def hash_assert(ast, expectations)
+  def recursive_assert(ast, expectations)
     (expectations || {}).each do |attr_name, expected|
       actual = ast.__send__ attr_name
-      if expected.kind_of? Hash
-        hash_assert actual, expected
+      case expected
+      when Hash
+        recursive_assert actual, expected
+      when Array
+        actual.zip(expected) { |actual_at_index, expected_at_index|
+          recursive_assert actual_at_index, expected_at_index
+        }
       else
         expect(actual).to eq expected
       end
