@@ -43,6 +43,7 @@ else
     x - @y
     x - @y
   BODY
+  parse_opts[:body] = 'a.b'
 
   on_finish = lambda { |parse_tree| p parse_tree.to_ast }
 end

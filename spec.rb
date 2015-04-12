@@ -24,18 +24,10 @@ module SpecHelpers
 
   def ast!(ast, assertions)
     asrts = assertions.dup
-    first_ast = ast.expressions.first
+    first = ast.expressions.first
 
-    # assertions about the first node
-    if (expected = asrts.delete :first)
-      type = expected.delete :type
-      expect(first_ast.type).to eq type if type
-
-      name = expected.delete :name
-      expect(first_ast.name).to eq name if name
-
-      expect(expected).to be_empty
-    end
+    # first
+    hash_assert first, asrts.delete(:first)
 
     # sanity
     expect(asrts).to be_empty
@@ -44,6 +36,17 @@ module SpecHelpers
   def get_terminals(ast)
     return ast if ast.terminal?
     ast.elements.flat_map { |child| get_terminals child }
+  end
+
+  def hash_assert(ast, expectations)
+    (expectations || {}).each do |attr_name, expected|
+      actual = ast.__send__ attr_name
+      if expected.kind_of? Hash
+        hash_assert actual, expected
+      else
+        expect(actual).to eq expected
+      end
+    end
   end
 end
 
@@ -77,10 +80,9 @@ RSpec.describe 'My language' do
     end
 
     example 'method calls are to the RHS of a "."' do
-      pending
       parses! 'a.b', first: {
-        type:      :send,
-        target:    { type: :local_variable, name: 'a' },
+        type:      :send_message,
+        receiver:  { type: :local_variable, name: 'a' },
         name:      'b',
         arguments: [],
       }

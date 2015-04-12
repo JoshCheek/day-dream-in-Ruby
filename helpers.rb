@@ -172,6 +172,7 @@ class RubySyntax
 
   class Variable < RubySyntax
     attr_accessor :name
+
     def initialize(name)
       self.name = name
     end
@@ -182,6 +183,20 @@ class RubySyntax
 
     def pretty_print(pp)
       pp.text "#<#{classname} #{name.inspect}>"
+    end
+  end
+
+  class SendMessage < RubySyntax
+    attr_accessor :receiver, :name, :arguments
+
+    def initialize(receiver, name)
+      self.receiver  = receiver
+      self.name      = name
+      self.arguments = []
+    end
+
+    def children
+      [receiver, '.', name]
     end
   end
 

@@ -29,17 +29,31 @@ grammar Whatevz
   end
 
   rule expression_modifiers
-    sp binary_op_call {
+    (
+      (sp  modifier:binary_op_call) /
+      (    modifier:send_message)
+    ) {
       def to_ast(to_modify)
-        binary_op_call.to_ast to_modify
+        modifier.to_ast to_modify
+      end
+    }
+  end
+
+  rule send_message
+    "." method_name:identifier {
+      def to_ast(receiver)
+        RubySyntax::SendMessage.new(
+          receiver,
+          method_name.text_value
+        )
       end
     }
   end
 
   rule binary_op_call
     operator sp rhs:expression {
-      def to_ast(target)
-        RubySyntax::BinaryExpression.new target,
+      def to_ast(lhs)
+        RubySyntax::BinaryExpression.new lhs,
                                          operator.text_value,
                                          rhs.to_ast
       end
