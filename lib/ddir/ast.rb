@@ -105,6 +105,17 @@ module Ddir
     end
 
 
+    class Integer < Ast
+      attr_accessor :value
+      def initialize(value)
+        self.value = value
+      end
+      def children
+        []
+      end
+    end
+
+
     class Self < Ast
       def children
         []

@@ -168,23 +168,28 @@ module DayDreamInRuby
       if r3
         r1 = r3
       else
-        @index = i1
-        r1 = nil
+        r4 = _nt_integer
+        if r4
+          r1 = r4
+        else
+          @index = i1
+          r1 = nil
+        end
       end
     end
     s0 << r1
     if r1
-      s4, i4 = [], index
+      s5, i5 = [], index
       loop do
-        r5 = _nt_expression_modifiers
-        if r5
-          s4 << r5
+        r6 = _nt_expression_modifiers
+        if r6
+          s5 << r6
         else
           break
         end
       end
-      r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-      s0 << r4
+      r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+      s0 << r5
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -493,7 +498,6 @@ module DayDreamInRuby
       names << first_name.text_value.intern unless first_name.empty?
       remaining_names.elements.each { |n| names << n.local_variable.text_value.intern }
       names
-      # param_names.elements.map { |pn| pn.text_value.intern }
     end
   end
 
@@ -934,6 +938,50 @@ module DayDreamInRuby
     end
 
     node_cache[:nl][start_index] = r0
+
+    r0
+  end
+
+  module Integer0
+    def to_ast
+      Ddir::Ast::Integer.new text_value.to_i
+    end
+  end
+
+  def _nt_integer
+    start_index = index
+    if node_cache[:integer].has_key?(index)
+      cached = node_cache[:integer][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    s0, i0 = [], index
+    loop do
+      if has_terminal?('\G[0-9]', true, index)
+        r1 = true
+        @index += 1
+      else
+        r1 = nil
+      end
+      if r1
+        s0 << r1
+      else
+        break
+      end
+    end
+    if s0.empty?
+      @index = i0
+      r0 = nil
+    else
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Integer0)
+    end
+
+    node_cache[:integer][start_index] = r0
 
     r0
   end

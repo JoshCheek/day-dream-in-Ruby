@@ -6,6 +6,11 @@ RSpec.describe 'My language' do
   end
 
   context 'parsing' do
+    specify 'integers are made up of uhm. digits' do
+      parses! '1', type: :integer, value: 1
+      parses! '19329', type: :integer, value: 19329
+    end
+
     specify 'local vars are identifiers: made of lowercase a-z and underscores' do
       parses! 'x',   type: :local_variable, name: :x
       parses! '_',   type: :local_variable, name: :_
@@ -89,7 +94,11 @@ RSpec.describe 'My language' do
         parses! '@.m (a, b ,c , d) a', block: { param_names: [:a, :b, :c, :d] }
       end
 
-      specify 'the body is anything to the right of the argument list'
+      specify 'the body is anything to the right of the argument list' do
+        parses! '@.m () a.b', block: {
+            body: { name: :b, receiver: {name: :a} }
+          }
+      end
     end
   end
 
