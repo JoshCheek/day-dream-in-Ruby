@@ -43,7 +43,7 @@ grammar DayDreamInRuby
   rule send_message
     "." method_name:identifier {
       def to_ast(receiver)
-        Ddir::Ast::SendMessage.new receiver, method_name.text_value
+        Ddir::Ast::SendMessage.new receiver, method_name.text_value.intern
       end
     }
   end
@@ -77,7 +77,7 @@ grammar DayDreamInRuby
   rule local_variable
     identifier {
       def to_ast
-        Ddir::Ast::LocalVariable.new text_value
+        Ddir::Ast::LocalVariable.new text_value.intern
       end
     }
   end
@@ -85,7 +85,7 @@ grammar DayDreamInRuby
   rule instance_variable
     "@" identifier {
       def to_ast
-        Ddir::Ast::InstanceVariable.new text_value
+        Ddir::Ast::InstanceVariable.new text_value.intern
       end
     }
   end

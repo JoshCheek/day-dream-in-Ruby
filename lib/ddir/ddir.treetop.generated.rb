@@ -279,7 +279,7 @@ module DayDreamInRuby
 
   module SendMessage1
     def to_ast(receiver)
-      Ddir::Ast::SendMessage.new receiver, method_name.text_value
+      Ddir::Ast::SendMessage.new receiver, method_name.text_value.intern
     end
   end
 
@@ -464,7 +464,7 @@ module DayDreamInRuby
 
   module LocalVariable0
     def to_ast
-      Ddir::Ast::LocalVariable.new text_value
+      Ddir::Ast::LocalVariable.new text_value.intern
     end
   end
 
@@ -495,7 +495,7 @@ module DayDreamInRuby
 
   module InstanceVariable1
     def to_ast
-      Ddir::Ast::InstanceVariable.new text_value
+      Ddir::Ast::InstanceVariable.new text_value.intern
     end
   end
 
