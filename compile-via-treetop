@@ -2,69 +2,76 @@
 $LOAD_PATH.unshift File.expand_path(__dir__)
 require 'treetop'
 
-options = {}
+build_opts = {
+  grammar_file: 'whatevz.treetop',
+  compile:      true, # recompile every time
+}
 
-at_exit { puts Lang.new(options).compile.inspect }
+parse_opts = {
+  parser_class: :placeholder,
+  body:         :placeholder,
+  pry:          false,
+  errstream:    false,
+}
 
-if ARGV.include? 'p'
-  require 'pry'
-  options[:pry] = true
+at_exit do
+  parse_opts[:parser_class] = BuildTheParser.new(build_opts).parser_class
+  p Parse parse_opts
 end
 
+# pass "p" on argv to get pry inserted
+if ARGV.include? 'p'
+  require 'pry'
+  parse_opts[:pry] = true
+end
+
+# choose amongst the parsers
 if ARGV.include? 'xy'
-  options[:grammar_file] = 'xy.treetop'
-  options[:body]         = 'xy'
+  Wat = Module.new
+  build_opts[:grammar_file] = 'xy.treetop'
+  parse_opts[:body]         = 'xy'
 elsif ARGV.include? 'a'
-  options[:grammar_file] = 'a.treetop'
-  options[:body]   = '1+1+(2+2)+3+((5+5)+((6)))'
+  build_opts[:grammar_file] = 'a.treetop'
+  parse_opts[:body]   = '1+1+(2+2)+3+((5+5)+((6)))'
 else
-  options[:grammar_file] = 'whatevz.treetop'
-  options[:body]   = <<-BODY.gsub(/^    /, '')
+  build_opts[:grammar_file] = 'whatevz.treetop'
+  parse_opts[:body]   = <<-BODY.gsub(/^    /, '')
     x + x
     x - @y
     (x+x) + (y+y)
   BODY
   ARGV.include? 'real' and
-    options[:body] = File.read('input')
+    build_opts[:body] = File.read('input')
 end
 
+def Parse(opts)
+  Parse.new(opts).parse
+end
 
-
-class Lang
-  attr_reader :body, :parser
-
-  def initialize(body: body, pry: false, grammar_file:)
-    @body         = body
-    @pry          = pry
-    @parser       = parser
-    @grammar_file = grammar_file
-    @parser_file  = "#@grammar_file.generated.rb"
+class Parse
+  def initialize(body:, parser_class:, pry: false, errstream:$stderr)
+    self.pry          = pry
+    self.body         = body
+    self.errstream    = errstream
+    self.parser_class = parser_class
   end
 
-  def compile
-    # compile grammar
-    rb_grammar = Treetop::Compiler::GrammarCompiler.new.ruby_source(@grammar_file)
-    File.write @parser_file, rb_grammar
-    load @parser_file
-    constant_name    = rb_grammar.strip.lines.first[/[A-Z]\w*/]
-    parser_classname = "#{constant_name}Parser"
-    parser           = Object.const_get(parser_classname).new
-
-    # parse body
+  def parse
+    parser = parser_class.new
     result = parser.parse body
-
-    # handle errors
-    unless result
-      result = parser.parse body, consume_all_input: false
-      print_failure(body, result, parser)
-      raise "Failed to parse!"
-    end
-    result
+    return result if result
+    result = parser.parse body, consume_all_input: false # more informative
+    print_failure(body, result, parser)
+    raise "Failed to parse!"
   ensure
-    binding.pry if @pry
+    binding.pry if pry?
   end
 
   private
+
+  attr_accessor :pry, :parser_class, :errstream, :body
+
+  alias pry? pry
 
   def print_failure(body, result, parser)
     print_fail_pair :body                       , body
@@ -82,13 +89,36 @@ class Lang
 
   def print_fail_pair(key, value)
     val = value.inspect.gsub(/^/, '  ')
+    whitespace = (val.lines.length == 1) ?
+                   " " * (30 - key.length - 2) :
+                   "\n"
+    errstream.puts "\e[31m #{key} \e[39m#{whitespace}#{val}"
+  end
+end
 
-    if val.lines.length == 1
-      val = " " * (30 - key.length - 2) + val
-    else
-      val = "\n" + val
-    end
 
-    puts "\e[31m #{key} \e[39m#{val}"
+class BuildTheParser
+  def initialize(grammar_file:, compile:)
+    @grammar_file = grammar_file
+    @parser_file  = "#@grammar_file.generated.rb"
+    @compile      = compile
+  end
+
+  def parser_class
+    compile! if @compile
+    load_file
+  end
+
+  private
+
+  def compile!
+    compiler = Treetop::Compiler::GrammarCompiler.new
+    File.write @parser_file, compiler.ruby_source(@grammar_file)
+  end
+
+  def load_file
+    definition = File.read(@parser_file)
+    namespace  = Module.new
+    namespace.class_eval definition, @parser_file
   end
 end
