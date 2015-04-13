@@ -908,7 +908,7 @@ module DayDreamInRuby
     if r1
       s2, i2 = [], index
       loop do
-        if has_terminal?('\G[_a-z0-9]', true, index)
+        if has_terminal?('\G[_a-zA-Z0-9]', true, index)
           r3 = true
           @index += 1
         else

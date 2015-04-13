@@ -128,7 +128,7 @@ grammar DayDreamInRuby
   end
 
   rule identifier
-    [_a-z] [_a-z0-9]*
+    [_a-z] [_a-zA-Z0-9]*
   end
 
   rule operator
