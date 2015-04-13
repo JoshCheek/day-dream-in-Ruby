@@ -15,13 +15,14 @@ RSpec.describe 'My language' do
       parses! '19329', type: :integer, value: 19329
     end
 
-    specify 'local vars are identifiers: made of lowercase a-z and underscores' do
+    specify 'local vars are identifiers: start w/ lowercase a-z and underscores, bodies can also have digits' do
       parses! 'x',   type: :local_variable, name: :x
       parses! '_',   type: :local_variable, name: :_
       parses! '_x_', type: :local_variable, name: :_x_
       parses! 'a_b', type: :local_variable, name: :a_b
       parses! [*'a'..'z'].join, type: :local_variable,
                                 name: :abcdefghijklmnopqrstuvwxyz
+      parses! 'a123', type: :local_variable, name: :a123
     end
 
     specify 'ivars are identifiers with an @ prefix' do

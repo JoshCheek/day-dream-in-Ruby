@@ -883,6 +883,9 @@ module DayDreamInRuby
     r0
   end
 
+  module Identifier0
+  end
+
   def _nt_identifier
     start_index = index
     if node_cache[:identifier].has_key?(index)
@@ -894,25 +897,38 @@ module DayDreamInRuby
       return cached
     end
 
-    s0, i0 = [], index
-    loop do
-      if has_terminal?('\G[_a-z]', true, index)
-        r1 = true
-        @index += 1
-      else
-        r1 = nil
-      end
-      if r1
-        s0 << r1
-      else
-        break
-      end
+    i0, s0 = index, []
+    if has_terminal?('\G[_a-z]', true, index)
+      r1 = true
+      @index += 1
+    else
+      r1 = nil
     end
-    if s0.empty?
+    s0 << r1
+    if r1
+      s2, i2 = [], index
+      loop do
+        if has_terminal?('\G[_a-z0-9]', true, index)
+          r3 = true
+          @index += 1
+        else
+          r3 = nil
+        end
+        if r3
+          s2 << r3
+        else
+          break
+        end
+      end
+      r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      s0 << r2
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Identifier0)
+    else
       @index = i0
       r0 = nil
-    else
-      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
     end
 
     node_cache[:identifier][start_index] = r0
