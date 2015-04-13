@@ -415,8 +415,9 @@ module DayDreamInRuby
 
   module Block1
     def to_ast
+      body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast
       Ddir::Ast::Block.new params.ordered_names,
-                           body.to_ast
+                           body_ast
     end
   end
 
@@ -461,7 +462,12 @@ module DayDreamInRuby
           end
           s0 << r4
           if r4
-            r6 = _nt_expression
+            r7 = _nt_expression
+            if r7
+              r6 = r7
+            else
+              r6 = instantiate_node(SyntaxNode,input, index...index)
+            end
             s0 << r6
           end
         end

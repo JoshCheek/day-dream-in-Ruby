@@ -6,6 +6,10 @@ RSpec.describe 'My language' do
   end
 
   context 'parsing' do
+    specify 'empty docs get the null-expression' do
+      parses! '', type: :expressions, expressions: []
+    end
+
     specify 'integers are made up of uhm. digits' do
       parses! '1', type: :integer, value: 1
       parses! '19329', type: :integer, value: 19329
@@ -82,6 +86,12 @@ RSpec.describe 'My language' do
           block:     { param_names: [:x] },
           arguments: [{name: :a}],
           name:      :m
+        parses! '@.m a ()',
+          receiver:  { type: :self },
+          block:     {
+            param_names: [],
+            body: { type: :none },
+          }
       end
 
       specify 'argument lists can be empty' do

@@ -138,6 +138,12 @@ module Ddir
       end
     end
 
+    class None < Ast
+      def children
+        []
+      end
+    end
+
 
     class Variable < Ast
       attr_accessor :name
