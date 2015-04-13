@@ -601,14 +601,23 @@ module DayDreamInRuby
   end
 
   module EntryLocation0
-    def door
+    def name
       elements[2]
+    end
+
+    def body
+      elements[3]
     end
   end
 
   module EntryLocation1
     def to_ast
-      Ddir::Ast::EntryLocation.new door.to_ast
+      name_symbol = if name.empty?
+        Ddir::Ast::Symbol.new :call
+      else
+        name.to_ast
+      end
+      Ddir::Ast::EntryLocation.new name_symbol, body.to_ast
     end
   end
 
@@ -641,20 +650,17 @@ module DayDreamInRuby
       end
       s0 << r2
       if r2
-        i4 = index
-        r5 = _nt_expression
+        r5 = _nt_symbol
         if r5
           r4 = r5
         else
-          r6 = _nt_block
-          if r6
-            r4 = r6
-          else
-            @index = i4
-            r4 = nil
-          end
+          r4 = instantiate_node(SyntaxNode,input, index...index)
         end
         s0 << r4
+        if r4
+          r6 = _nt_block
+          s0 << r6
+        end
       end
     end
     if s0.last

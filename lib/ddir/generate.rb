@@ -36,9 +36,13 @@ module Ddir
           .join "\n#{indentation}"
 
       when :entry_location
-        case [entry, ast.door.type]
-        when [:toplevel, :block]
-          "define_singleton_method(:call)#{generate ast.door, entry, indentation}"
+        name = generate ast.name, entry, indentation
+        if entry == :toplevel && ast.via_method?
+          body = generate ast.body, entry, indentation
+          "define_singleton_method(#{name})#{body}"
+        elsif entry == :toplevel && ast.via_class?
+          require "pry"
+          binding.pry
         else
           raise "Unknown entry location: #{entry.inspect}"
         end
@@ -63,6 +67,9 @@ module Ddir
 
       when :self
         'self'
+
+      when :symbol
+        ":#{ast.value}"
 
       when :local_variable, :instance_variable
         ast.name.to_s

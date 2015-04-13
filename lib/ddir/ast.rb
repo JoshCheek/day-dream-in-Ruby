@@ -67,13 +67,19 @@ module Ddir
 
 
     class EntryLocation < Ast
-      attr_accessor :door
-      def initialize(door)
-        self.door = door
+      attr_accessor :name, :body
+      def initialize(name, body)
+        self.name = name
+        self.body = body
       end
-
       def children
-        [door]
+        [name, body]
+      end
+      def via_class?
+        name =~ /^[A-Z]/
+      end
+      def via_method?
+        !via_class?
       end
     end
 

@@ -78,9 +78,14 @@ grammar DayDreamInRuby
   end
 
   rule entry_location
-    '->' sp? door:(expression / block) {
+    '->' sp? name:symbol? body:block {
       def to_ast
-        Ddir::Ast::EntryLocation.new door.to_ast
+        name_symbol = if name.empty?
+          Ddir::Ast::Symbol.new :call
+        else
+          name.to_ast
+        end
+        Ddir::Ast::EntryLocation.new name_symbol, body.to_ast
       end
     }
   end
