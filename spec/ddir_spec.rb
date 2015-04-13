@@ -105,12 +105,12 @@ RSpec.describe 'My language' do
   context 'running', pending: true do
     context 'entry locations' do
       it 'can be anonymous functions' do
-        e = eval '-> (x) x + x'
+        e = eval '-> (x) x + x', wrap: true
         expect(e.call 11).to eq 22
       end
 
       it 'can be named classes' do
-        e = eval '-> :A ()'
+        e = eval '-> :A ()', wrap: true
         expect(e::A).to be_a_kind_of Class
       end
     end

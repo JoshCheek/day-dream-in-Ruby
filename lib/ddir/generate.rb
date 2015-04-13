@@ -1,13 +1,14 @@
 module Ddir
-  def self.generate(ast)
-    Generate.new(ast).call
+  def self.generate(ast, wrap:true)
+    Generate.new(ast: ast, wrap: wrap).call
   end
 
   class Generate
-    attr_accessor :ast
+    attr_accessor :wrap, :ast
 
-    def initialize(ast)
-      self.ast = ast
+    def initialize(ast:, wrap:)
+      self.ast  = ast
+      self.wrap = wrap
     end
 
     def call
@@ -17,12 +18,17 @@ module Ddir
     private
 
     def generate(ast, indentation)
-      return unless ast
+      return '' unless ast
       case ast.type
       when :body
-        "Module.new {\n#{indent indentation}#{
-          generate ast.expressions, indent(indentation)
-        }}\n#{indentation}"
+        body = generate ast.expressions, indent(indentation)
+        if wrap
+          "Module.new {\n#{indent indentation}#{
+            body
+          }}\n#{indentation}"
+        else
+          body
+        end
 
       when :expressions
         ast.expressions

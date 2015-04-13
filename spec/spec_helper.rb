@@ -9,6 +9,13 @@ module SpecHelpers
     Ddir.parse body: body, errstream: errstream
   end
 
+  def eval(body, wrap:false)
+    Kernel.eval Ddir.generate(
+      parse(body),
+      wrap: wrap
+    )
+  end
+
   def ast!(ast, positional_assertions)
      positional_assertions = if positional_assertions.kind_of? Array
       positional_assertions
