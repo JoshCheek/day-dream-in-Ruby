@@ -606,17 +606,13 @@ module DayDreamInRuby
     end
 
     def body
-      elements[3]
+      elements[4]
     end
   end
 
   module EntryLocation1
     def to_ast
-      name_symbol = if name.empty?
-        Ddir::Ast::Symbol.new :call
-      else
-        name.to_ast
-      end
+      name_symbol = name.empty? ? :call : name.to_ast.value
       Ddir::Ast::EntryLocation.new name_symbol, body.to_ast
     end
   end
@@ -658,8 +654,17 @@ module DayDreamInRuby
         end
         s0 << r4
         if r4
-          r6 = _nt_block
+          r7 = _nt_sp
+          if r7
+            r6 = r7
+          else
+            r6 = instantiate_node(SyntaxNode,input, index...index)
+          end
           s0 << r6
+          if r6
+            r8 = _nt_block
+            s0 << r8
+          end
         end
       end
     end

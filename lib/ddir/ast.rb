@@ -76,7 +76,7 @@ module Ddir
         [name, body]
       end
       def via_class?
-        name =~ /^[A-Z]/
+        !!(name =~ /^[A-Z]/)
       end
       def via_method?
         !via_class?
@@ -126,26 +126,21 @@ module Ddir
       end
     end
 
-
-    class Integer < Ast
+    class ValueLiteral < Ast
       attr_accessor :value
       def initialize(value)
         self.value = value
       end
       def children
-        []
+        [value]
       end
     end
 
+    class Integer < ValueLiteral
+    end
 
-    class Symbol < Ast
-      attr_accessor :value
-      def initialize(value)
-        self.value = value
-      end
-      def children
-        []
-      end
+
+    class Symbol < ValueLiteral
     end
 
 

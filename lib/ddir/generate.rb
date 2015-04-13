@@ -36,13 +36,12 @@ module Ddir
           .join "\n#{indentation}"
 
       when :entry_location
-        name = generate ast.name, entry, indentation
         if entry == :toplevel && ast.via_method?
-          body = generate ast.body, entry, indentation
-          "define_singleton_method(#{name})#{body}"
+          body = generate ast.body, :method, indentation
+          "define_singleton_method(#{ast.name.inspect})#{body}"
         elsif entry == :toplevel && ast.via_class?
-          require "pry"
-          binding.pry
+          body = generate ast.body, :class, indent(indentation)
+          "const_set(#{ast.name.inspect}, Class.new #{body})"
         else
           raise "Unknown entry location: #{entry.inspect}"
         end
@@ -73,6 +72,9 @@ module Ddir
 
       when :local_variable, :instance_variable
         ast.name.to_s
+
+      when :none
+        ''
 
       else
         raise "CANNOT GENERATE #{ast.inspect}"
