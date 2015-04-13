@@ -176,25 +176,30 @@ module DayDreamInRuby
           if r5
             r1 = r5
           else
-            @index = i1
-            r1 = nil
+            r6 = _nt_symbol
+            if r6
+              r1 = r6
+            else
+              @index = i1
+              r1 = nil
+            end
           end
         end
       end
     end
     s0 << r1
     if r1
-      s6, i6 = [], index
+      s7, i7 = [], index
       loop do
-        r7 = _nt_expression_modifiers
-        if r7
-          s6 << r7
+        r8 = _nt_expression_modifiers
+        if r8
+          s7 << r8
         else
           break
         end
       end
-      r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-      s0 << r6
+      r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+      s0 << r7
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -1080,6 +1085,75 @@ module DayDreamInRuby
     end
 
     node_cache[:integer][start_index] = r0
+
+    r0
+  end
+
+  module Symbol0
+    def value
+      elements[1]
+    end
+  end
+
+  module Symbol1
+    def to_ast
+      Ddir::Ast::Symbol.new value.text_value.intern
+    end
+  end
+
+  def _nt_symbol
+    start_index = index
+    if node_cache[:symbol].has_key?(index)
+      cached = node_cache[:symbol][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?(':', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure(':')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      s2, i2 = [], index
+      loop do
+        if has_terminal?('\G[_a-zA-Z0-9]', true, index)
+          r3 = true
+          @index += 1
+        else
+          r3 = nil
+        end
+        if r3
+          s2 << r3
+        else
+          break
+        end
+      end
+      if s2.empty?
+        @index = i2
+        r2 = nil
+      else
+        r2 = instantiate_node(SyntaxNode,input, i2...index, s2)
+      end
+      s0 << r2
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Symbol0)
+      r0.extend(Symbol1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:symbol][start_index] = r0
 
     r0
   end

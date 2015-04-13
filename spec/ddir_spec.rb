@@ -15,6 +15,13 @@ RSpec.describe 'My language' do
       parses! '19329', type: :integer, value: 19329
     end
 
+    specify 'symbols are sequences of characters that start with colons' do
+      parses! ':x',   type: :symbol, value: :x
+      parses! ':z2',  type: :symbol, value: :z2
+      parses! ':a_b', type: :symbol, value: :a_b
+      parses! ':A',   type: :symbol, value: :A
+    end
+
     specify 'local vars are identifiers: start w/ lowercase a-z and underscores, bodies can also have digits and uppercase characters' do
       parses! 'x',   type: :local_variable, name: :x
       parses! '_',   type: :local_variable, name: :_

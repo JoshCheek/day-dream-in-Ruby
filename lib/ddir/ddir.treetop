@@ -23,7 +23,7 @@ grammar DayDreamInRuby
   end
 
   rule expression
-    head:(entry_location / variable / self / integer)
+    head:(entry_location / variable / self / integer / symbol)
     tail:expression_modifiers* {
       def to_ast
         tail.elements.inject head.to_ast do |ast, modifier|
@@ -147,6 +147,14 @@ grammar DayDreamInRuby
     [0-9]+ {
       def to_ast
         Ddir::Ast::Integer.new text_value.to_i
+      end
+    }
+  end
+
+  rule symbol
+    ':' value:[_a-zA-Z0-9]+ {
+      def to_ast
+        Ddir::Ast::Symbol.new value.text_value.intern
       end
     }
   end
