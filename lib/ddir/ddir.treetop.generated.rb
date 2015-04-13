@@ -223,7 +223,7 @@ module DayDreamInRuby
 
   module ExpressionModifiers1
     def modifier
-      elements[1]
+      elements[0]
     end
   end
 
@@ -234,6 +234,12 @@ module DayDreamInRuby
   end
 
   module ExpressionModifiers3
+    def modifier
+      elements[1]
+    end
+  end
+
+  module ExpressionModifiers4
     def to_ast(to_modify)
       modifier.to_ast to_modify
     end
@@ -272,20 +278,11 @@ module DayDreamInRuby
     end
     if r1
       r0 = r1
-      r0.extend(ExpressionModifiers3)
+      r0.extend(ExpressionModifiers4)
     else
       i5, s5 = index, []
-      r7 = _nt_sp
-      if r7
-        r6 = r7
-      else
-        r6 = instantiate_node(SyntaxNode,input, index...index)
-      end
+      r6 = _nt_send_assignemnt_message
       s5 << r6
-      if r6
-        r8 = _nt_assignment
-        s5 << r8
-      end
       if s5.last
         r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
         r5.extend(ExpressionModifiers1)
@@ -295,24 +292,48 @@ module DayDreamInRuby
       end
       if r5
         r0 = r5
-        r0.extend(ExpressionModifiers3)
+        r0.extend(ExpressionModifiers4)
       else
-        i9, s9 = index, []
-        r10 = _nt_send_message
-        s9 << r10
-        if s9.last
-          r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
-          r9.extend(ExpressionModifiers2)
+        i7, s7 = index, []
+        r8 = _nt_send_message
+        s7 << r8
+        if s7.last
+          r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+          r7.extend(ExpressionModifiers2)
         else
-          @index = i9
-          r9 = nil
+          @index = i7
+          r7 = nil
         end
-        if r9
-          r0 = r9
-          r0.extend(ExpressionModifiers3)
+        if r7
+          r0 = r7
+          r0.extend(ExpressionModifiers4)
         else
-          @index = i0
-          r0 = nil
+          i9, s9 = index, []
+          r11 = _nt_sp
+          if r11
+            r10 = r11
+          else
+            r10 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s9 << r10
+          if r10
+            r12 = _nt_assignment
+            s9 << r12
+          end
+          if s9.last
+            r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+            r9.extend(ExpressionModifiers3)
+          else
+            @index = i9
+            r9 = nil
+          end
+          if r9
+            r0 = r9
+            r0.extend(ExpressionModifiers4)
+          else
+            @index = i0
+            r0 = nil
+          end
         end
       end
     end
@@ -377,6 +398,77 @@ module DayDreamInRuby
     end
 
     node_cache[:assignment][start_index] = r0
+
+    r0
+  end
+
+  module SendAssignemntMessage0
+    def name
+      elements[1]
+    end
+
+    def assignment
+      elements[3]
+    end
+  end
+
+  module SendAssignemntMessage1
+    def to_ast(receiver_ast)
+      Ddir::Ast::SendMessage.new \
+        receiver_ast,
+        :"#{name.text_value}=",
+        [assignment.value.to_ast], # args
+        nil                        # no block
+    end
+  end
+
+  def _nt_send_assignemnt_message
+    start_index = index
+    if node_cache[:send_assignemnt_message].has_key?(index)
+      cached = node_cache[:send_assignemnt_message][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('.', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure('.')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r2 = _nt_identifier
+      s0 << r2
+      if r2
+        r4 = _nt_sp
+        if r4
+          r3 = r4
+        else
+          r3 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r3
+        if r3
+          r5 = _nt_assignment
+          s0 << r5
+        end
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(SendAssignemntMessage0)
+      r0.extend(SendAssignemntMessage1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:send_assignemnt_message][start_index] = r0
 
     r0
   end

@@ -35,8 +35,9 @@ grammar DayDreamInRuby
 
   rule expression_modifiers
     ( (sp? modifier:binary_op_call)
-    / (sp? modifier:assignment)
+    / (    modifier:send_assignemnt_message)
     / (    modifier:send_message)
+    / (sp? modifier:assignment)
     ) {
       def to_ast(to_modify)
         modifier.to_ast to_modify
@@ -48,6 +49,18 @@ grammar DayDreamInRuby
     '<-' sp? value:expression {
       def to_ast(target_ast)
         Ddir::Ast::Assignment.new target_ast, value.to_ast
+      end
+    }
+  end
+
+  rule send_assignemnt_message
+    '.' name:identifier sp? assignment {
+      def to_ast(receiver_ast)
+        Ddir::Ast::SendMessage.new \
+          receiver_ast,
+          :"#{name.text_value}=",
+          [assignment.value.to_ast], # args
+          nil                        # no block
       end
     }
   end

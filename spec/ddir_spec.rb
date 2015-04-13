@@ -169,7 +169,6 @@ RSpec.describe 'My language' do
         expect(@a).to eq 123
       end
       it 'calls setters' do
-        pending
         assigned = nil
         define_singleton_method(:a=) { |x| assigned = x }
         eval '@.a <- 123'
@@ -208,9 +207,17 @@ RSpec.describe 'My language' do
         define(:abc) { |*args| "args: #{args.inspect}" }
         expect(eval '@.abc 1 2 3').to eq "args: [1, 2, 3]"
       end
-      xit 'can call private setters on self' do
-        define(:abc=, private: true) { |x| "arg: #{x.inspect}" }
-        expect(eval '@.abc <- 123 ').to eq "arg: 123"
+      it 'can call public setters on self, and returns the assigned value' do
+        sent = nil
+        define(:abc=, private: false) { |x| sent = x }
+        expect(eval '@.abc <- 123 ').to eq 123
+        expect(sent).to eq 123
+      end
+      xit 'can call private setters on self, and returns the assigned value' do
+        sent = nil
+        define(:abc=, private: true) { |x| sent = x }
+        expect(eval '@.abc <- 123 ').to eq 123
+        expect(sent).to eq 123
       end
       it 'can pass blocks' do
         define(:abc) { |&b| "result: #{b.call.inspect}" }
@@ -223,6 +230,12 @@ RSpec.describe 'My language' do
     end
 
     context 'local variables' do
+      it 'can set them' do
+        expect(eval "a <- 1\n@.local_variables").to include :a
+      end
+      it 'can get them' do
+        expect(eval "a <- 1\na + a").to eq 2
+      end
     end
 
     context 'argument lists' do
