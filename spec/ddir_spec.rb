@@ -121,7 +121,7 @@ RSpec.describe 'My language' do
     end
   end
 
-  context 'running' do
+  context 'Generated code' do
     context 'literals' do
       example '123 is an integer' do
         expect(eval '123').to eq 123
@@ -163,6 +163,45 @@ RSpec.describe 'My language' do
       are 'indicated by an arg list and inline body'
       are 'indicated by an arg list and indentation'
       are 'indicated by indentation without an arg list'
+    end
+
+    context 'method calls' do
+      def define(name, private:false, &block)
+        singleton_class.class_eval do
+          define_method name, &block
+          private(name) if private
+        end
+        methods = private ? private_methods : public_methods
+        expect(methods).to include name
+      end
+
+      it 'can call public methods on self' do
+        define(:abc, private: false) { 123 }
+        expect(eval '@.abc').to eq 123
+      end
+      it 'can call private methods on self' do
+        define(:abc, private: true) { 123 }
+        expect(eval '@.abc').to eq 123
+      end
+      it 'can call methods on other objects' do
+        expect(eval '123.succ').to eq 124
+      end
+      it 'can pass arguments' do
+        define(:abc) { |*args| "args: #{args.inspect}" }
+        expect(eval '@.abc 1 2 3').to eq "args: [1, 2, 3]"
+      end
+      xit 'can call private setters on self' do
+        define(:abc=, private: true) { |x| "arg: #{x.inspect}" }
+        expect(eval '@.abc <- 123 ').to eq "arg: 123"
+      end
+      it 'can pass blocks' do
+        define(:abc) { |&b| "result: #{b.call.inspect}" }
+        expect(eval '@.abc () 123').to eq "result: 123"
+      end
+      it 'can pass args and blocks' do
+        define(:abc) { |a, &b| "arg: #{a.inspect}, block: #{b.call}" }
+        expect(eval '@.abc 1 () 2').to eq "arg: 1, block: 2"
+      end
     end
 
     context 'local variables' do

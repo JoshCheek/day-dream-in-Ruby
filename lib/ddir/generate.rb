@@ -50,7 +50,12 @@ module Ddir
         "((#{generate ast.left_child, entry, indentation}) #{ast.operator} (#{generate ast.right_child, entry, indentation}))"
 
       when :send_message
-        "(#{generate ast.receiver, entry, indentation}).#{ast.name}(#{
+        receiver = if ast.receiver.type == :self
+          ""
+        else
+          "(#{generate ast.receiver, entry, indentation})."
+        end
+        "#{receiver}#{ast.name}(#{
             ast.arguments.map { |arg|
               generate arg, entry, indentation
             }.join(', ')
