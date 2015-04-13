@@ -8,9 +8,8 @@ parse_opts = {
     x + x
     x - @y
     x - @y
-    x - @y
-    x - @y
     abc.def.ghi
+    -> (some_arg, other_arg) some_arg + x - y.abc 123 (x) x + @x + other_arg
   BODY
 }
 

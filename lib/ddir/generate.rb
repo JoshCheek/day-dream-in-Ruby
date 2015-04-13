@@ -32,13 +32,13 @@ module Ddir
 
       when :expressions
         ast.expressions
-          .map { |expr| "#{generate expr, entry, indentation}\n#{indentation}" }
-          .join
+          .map { |expr| generate expr, entry, indentation }
+          .join "\n#{indentation}"
 
       when :entry_location
         case [entry, ast.door.type]
         when [:toplevel, :block]
-          "define_singleton_method(:call)#{generate ast.door, entry, indent(indentation)}"
+          "define_singleton_method(:call)#{generate ast.door, entry, indentation}"
         else
           raise "Unknown entry location: #{entry.inspect}"
         end
@@ -49,12 +49,12 @@ module Ddir
       when :send_message
         "(#{generate ast.receiver, entry, indentation}).#{ast.name}(#{
             ast.arguments.map { |arg|
-              generate arg, indentation
+              generate arg, entry, indentation
             }.join(', ')
-            })#{' ' if ast.block}#{generate ast.block, entry, indentation}"
+            })#{generate ast.block, entry, indentation}"
 
       when :block
-        "{ |#{ast.param_names.join ', '}|\n#{indent(indentation)}#{
+        " { |#{ast.param_names.join ', '}|\n#{indent(indentation)}#{
           generate ast.body, entry, indent(indentation)}\n#{indentation
         }}\n#{indentation}"
 
