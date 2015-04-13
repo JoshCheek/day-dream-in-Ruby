@@ -12,16 +12,16 @@ module Ddir
     end
 
     def call
-      generate ast, ''
+      generate ast, :toplevel, ''
     end
 
     private
 
-    def generate(ast, indentation)
+    def generate(ast, entry, indentation)
       return '' unless ast
       case ast.type
       when :body
-        body = generate ast.expressions, indent(indentation)
+        body = generate ast.expressions, entry, indent(indentation)
         if wrap
           "Module.new {\n#{indent indentation}#{
             body
@@ -32,22 +32,30 @@ module Ddir
 
       when :expressions
         ast.expressions
-          .map { |expr| "#{generate expr, indentation}\n#{indentation}" }
+          .map { |expr| "#{generate expr, entry, indentation}\n#{indentation}" }
           .join
 
+      when :entry_location
+        case [entry, ast.door.type]
+        when [:toplevel, :block]
+          "define_singleton_method(:call)#{generate ast.door, entry, indent(indentation)}"
+        else
+          raise "Unknown entry location: #{entry.inspect}"
+        end
+
       when :binary_expression
-        "((#{generate ast.left_child, indentation}) #{ast.operator} (#{generate ast.right_child, indentation}))"
+        "((#{generate ast.left_child, entry, indentation}) #{ast.operator} (#{generate ast.right_child, entry, indentation}))"
 
       when :send_message
-        "(#{generate ast.receiver, indentation}).#{ast.name}(#{
+        "(#{generate ast.receiver, entry, indentation}).#{ast.name}(#{
             ast.arguments.map { |arg|
               generate arg, indentation
             }.join(', ')
-            })#{' ' if ast.block}#{generate ast.block, indentation}"
+            })#{' ' if ast.block}#{generate ast.block, entry, indentation}"
 
       when :block
         "{ |#{ast.param_names.join ', '}|\n#{indent(indentation)}#{
-          generate ast.body, indent(indentation)}\n#{indentation
+          generate ast.body, entry, indent(indentation)}\n#{indentation
         }}\n#{indentation}"
 
       when :integer

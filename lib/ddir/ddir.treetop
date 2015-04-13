@@ -23,7 +23,7 @@ grammar DayDreamInRuby
   end
 
   rule expression
-    head:(variable / self / integer)
+    head:(entry_location / variable / self / integer)
     tail:expression_modifiers* {
       def to_ast
         tail.elements.inject head.to_ast do |ast, modifier|
@@ -35,7 +35,7 @@ grammar DayDreamInRuby
 
   rule expression_modifiers
     ( (sp? modifier:binary_op_call)
-    / (   modifier:send_message)
+    / (    modifier:send_message)
     ) {
       def to_ast(to_modify)
         modifier.to_ast to_modify
@@ -72,6 +72,14 @@ grammar DayDreamInRuby
         names << first_name.text_value.intern unless first_name.empty?
         remaining_names.elements.each { |n| names << n.local_variable.text_value.intern }
         names
+      end
+    }
+  end
+
+  rule entry_location
+    '->' sp? door:(expression / block) {
+      def to_ast
+        Ddir::Ast::EntryLocation.new door.to_ast
       end
     }
   end

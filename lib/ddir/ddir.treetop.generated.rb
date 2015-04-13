@@ -160,36 +160,41 @@ module DayDreamInRuby
 
     i0, s0 = index, []
     i1 = index
-    r2 = _nt_variable
+    r2 = _nt_entry_location
     if r2
       r1 = r2
     else
-      r3 = _nt_self
+      r3 = _nt_variable
       if r3
         r1 = r3
       else
-        r4 = _nt_integer
+        r4 = _nt_self
         if r4
           r1 = r4
         else
-          @index = i1
-          r1 = nil
+          r5 = _nt_integer
+          if r5
+            r1 = r5
+          else
+            @index = i1
+            r1 = nil
+          end
         end
       end
     end
     s0 << r1
     if r1
-      s5, i5 = [], index
+      s6, i6 = [], index
       loop do
-        r6 = _nt_expression_modifiers
-        if r6
-          s5 << r6
+        r7 = _nt_expression_modifiers
+        if r7
+          s6 << r7
         else
           break
         end
       end
-      r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-      s0 << r5
+      r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+      s0 << r6
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -580,6 +585,77 @@ module DayDreamInRuby
     end
 
     node_cache[:params][start_index] = r0
+
+    r0
+  end
+
+  module EntryLocation0
+    def door
+      elements[2]
+    end
+  end
+
+  module EntryLocation1
+    def to_ast
+      Ddir::Ast::EntryLocation.new door.to_ast
+    end
+  end
+
+  def _nt_entry_location
+    start_index = index
+    if node_cache[:entry_location].has_key?(index)
+      cached = node_cache[:entry_location][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('->', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
+      @index += 2
+    else
+      terminal_parse_failure('->')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r3 = _nt_sp
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+      if r2
+        i4 = index
+        r5 = _nt_expression
+        if r5
+          r4 = r5
+        else
+          r6 = _nt_block
+          if r6
+            r4 = r6
+          else
+            @index = i4
+            r4 = nil
+          end
+        end
+        s0 << r4
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(EntryLocation0)
+      r0.extend(EntryLocation1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:entry_location][start_index] = r0
 
     r0
   end

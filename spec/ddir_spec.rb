@@ -102,7 +102,7 @@ RSpec.describe 'My language' do
     end
   end
 
-  context 'running', pending: true do
+  context 'running' do
     context 'entry locations' do
       it 'can be anonymous functions' do
         e = eval '-> (x) x + x', wrap: true

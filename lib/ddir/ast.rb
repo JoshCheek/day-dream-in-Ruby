@@ -66,6 +66,18 @@ module Ddir
     end
 
 
+    class EntryLocation < Ast
+      attr_accessor :door
+      def initialize(door)
+        self.door = door
+      end
+
+      def children
+        [door]
+      end
+    end
+
+
     class BinaryExpression < Ast
       attr_accessor :left_child, :operator, :right_child
       def initialize(left_child, operator, right_child)
@@ -101,6 +113,10 @@ module Ddir
       def initialize(param_names, body)
         self.param_names = param_names
         self.body        = body
+      end
+
+      def children
+        [body]
       end
     end
 
