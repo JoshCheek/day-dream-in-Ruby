@@ -10,10 +10,7 @@ module SpecHelpers
   end
 
   def eval(body, wrap:false)
-    Kernel.eval Ddir.generate(
-      parse(body),
-      wrap: wrap
-    )
+    super Ddir.generate(parse(body), wrap: wrap)
   end
 
   def ast!(ast, positional_assertions)

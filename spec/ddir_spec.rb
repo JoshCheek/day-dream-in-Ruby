@@ -122,6 +122,15 @@ RSpec.describe 'My language' do
   end
 
   context 'running' do
+    context 'literals' do
+      example '123 is an integer' do
+        expect(eval '123').to eq 123
+      end
+      example ':abc is a symbol' do
+        expect(eval ':abc').to eq :abc
+      end
+    end
+
     context 'entry locations' do
       it 'can be anonymous functions' do
         e = eval '-> (x) x + x', wrap: true
@@ -135,8 +144,13 @@ RSpec.describe 'My language' do
     end
 
     context 'self' do
-      it 'is represented with @'
-      it 'calls methods on self with @.method'
+      it 'is represented with @' do
+        expect(eval '@').to equal self
+      end
+      it 'calls methods on self with @.method' do
+        define_singleton_method(:zomg) { 123 }
+        expect(eval '@.zomg').to eq 123
+      end
     end
 
     context 'the assigment arrow' do
