@@ -76,7 +76,12 @@ RSpec.describe 'My language' do
 
     specify 'lines beginning with method calls are invoked on the result of the previous line'
 
-    specify 'setters are method calls on the LHS of an assignment arrow'
+    specify 'setters are method calls on the LHS of an assignment arrow' do
+      parses! 'a <- 1',
+        type:   :assignment,
+        target: { type: :local_variable, name: :a },
+        value:  { type: :integer, value: 1 }
+    end
 
     describe 'blocks' do
       specify 'parens are argument lists' do
@@ -154,9 +159,22 @@ RSpec.describe 'My language' do
     end
 
     context 'the assigment arrow' do
-      it 'assigns locals'
-      it 'assigns ivars'
-      it 'calls setters'
+      it 'assigns locals' do
+        expect(eval "a <- 1\na").to eq 1
+        expect(eval "a <- 1\n@.local_variables").to include :a
+      end
+      it 'assigns ivars' do
+        expect(@a).to eq nil
+        eval '@a <- 123'
+        expect(@a).to eq 123
+      end
+      it 'calls setters' do
+        pending
+        assigned = nil
+        define_singleton_method(:a=) { |x| assigned = x }
+        eval '@.a <- 123'
+        expect(assigned).to eq 123
+      end
     end
 
     context 'blocks' do

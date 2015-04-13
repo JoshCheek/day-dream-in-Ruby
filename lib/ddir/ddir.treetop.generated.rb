@@ -223,11 +223,17 @@ module DayDreamInRuby
 
   module ExpressionModifiers1
     def modifier
-      elements[0]
+      elements[1]
     end
   end
 
   module ExpressionModifiers2
+    def modifier
+      elements[0]
+    end
+  end
+
+  module ExpressionModifiers3
     def to_ast(to_modify)
       modifier.to_ast to_modify
     end
@@ -266,11 +272,20 @@ module DayDreamInRuby
     end
     if r1
       r0 = r1
-      r0.extend(ExpressionModifiers2)
+      r0.extend(ExpressionModifiers3)
     else
       i5, s5 = index, []
-      r6 = _nt_send_message
+      r7 = _nt_sp
+      if r7
+        r6 = r7
+      else
+        r6 = instantiate_node(SyntaxNode,input, index...index)
+      end
       s5 << r6
+      if r6
+        r8 = _nt_assignment
+        s5 << r8
+      end
       if s5.last
         r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
         r5.extend(ExpressionModifiers1)
@@ -280,14 +295,88 @@ module DayDreamInRuby
       end
       if r5
         r0 = r5
-        r0.extend(ExpressionModifiers2)
+        r0.extend(ExpressionModifiers3)
       else
-        @index = i0
-        r0 = nil
+        i9, s9 = index, []
+        r10 = _nt_send_message
+        s9 << r10
+        if s9.last
+          r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+          r9.extend(ExpressionModifiers2)
+        else
+          @index = i9
+          r9 = nil
+        end
+        if r9
+          r0 = r9
+          r0.extend(ExpressionModifiers3)
+        else
+          @index = i0
+          r0 = nil
+        end
       end
     end
 
     node_cache[:expression_modifiers][start_index] = r0
+
+    r0
+  end
+
+  module Assignment0
+    def value
+      elements[2]
+    end
+  end
+
+  module Assignment1
+    def to_ast(target_ast)
+      Ddir::Ast::Assignment.new target_ast, value.to_ast
+    end
+  end
+
+  def _nt_assignment
+    start_index = index
+    if node_cache[:assignment].has_key?(index)
+      cached = node_cache[:assignment][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    if has_terminal?('<-', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 2))
+      @index += 2
+    else
+      terminal_parse_failure('<-')
+      r1 = nil
+    end
+    s0 << r1
+    if r1
+      r3 = _nt_sp
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+      if r2
+        r4 = _nt_expression
+        s0 << r4
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Assignment0)
+      r0.extend(Assignment1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:assignment][start_index] = r0
 
     r0
   end
@@ -317,9 +406,9 @@ module DayDreamInRuby
   end
 
   module SendMessage2
-    def to_ast(receiver)
+    def to_ast(receiver_ast)
       Ddir::Ast::SendMessage.new \
-        receiver,
+        receiver_ast,
         name.text_value.intern,
         args.elements.map { |arg| arg.expression.to_ast },
         (maybe_block.to_ast unless maybe_block.empty?)

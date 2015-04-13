@@ -66,6 +66,10 @@ module Ddir
           generate ast.body, entry, indent(indentation)}\n#{indentation
         }}\n#{indentation}"
 
+      when :assignment
+        "#{generate ast.target, entry, indentation} = #{
+           generate ast.value,  entry, indentation}"
+
       when :integer
         ast.value.to_s
 

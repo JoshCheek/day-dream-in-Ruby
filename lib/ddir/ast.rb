@@ -98,6 +98,18 @@ module Ddir
     end
 
 
+    class Assignment < Ast
+      attr_accessor :target, :value
+      def initialize(target, value)
+        self.target = target
+        self.value  = value
+      end
+      def children
+        [target, value]
+      end
+    end
+
+
     class SendMessage < Ast
       attr_accessor :receiver, :name, :arguments, :block
 
