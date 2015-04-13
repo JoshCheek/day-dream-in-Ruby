@@ -5,8 +5,9 @@ module Ddir
 
   class Generate
     attr_accessor :ast
+
     def initialize(ast)
-      self.ast       = ast
+      self.ast = ast
     end
 
     def call
@@ -16,37 +17,42 @@ module Ddir
     private
 
     def generate(ast, indentation)
-      case ast
-      when NilClass
-        # noop
-      when Ast::Body
-        "Module.new {#{indentation}\n#{
+      return unless ast
+      case ast.type
+      when :body
+        "Module.new {\n#{indent indentation}#{
           generate ast.expressions, indent(indentation)
-        }\n#{indentation}}\n#{indentation}"
-      when Ast::Expressions
+        }}\n#{indentation}"
+
+      when :expressions
         ast.expressions
-          .map { |expr| "#{indentation}#{generate expr, indentation};" }
+          .map { |expr| "#{generate expr, indentation}\n#{indentation}" }
           .join
-      when Ast::BinaryExpression
+
+      when :binary_expression
         "((#{generate ast.left_child, indentation}) #{ast.operator} (#{generate ast.right_child, indentation}))"
-      when Ast::SendMessage
+
+      when :send_message
         "(#{generate ast.receiver, indentation}).#{ast.name}(#{
             ast.arguments.map { |arg|
               generate arg, indentation
             }.join(', ')
-            }) #{generate ast.block, indentation}"
-      when Ast::Block
+            })#{' ' if ast.block}#{generate ast.block, indentation}"
+
+      when :block
         "{ |#{ast.param_names.join ', '}|\n#{indent(indentation)}#{
           generate ast.body, indent(indentation)}\n#{indentation
         }}\n#{indentation}"
-      when Ast::Integer
+
+      when :integer
         ast.value.to_s
-      when Ast::Self
+
+      when :self
         'self'
-      when Ast::LocalVariable
+
+      when :local_variable, :instance_variable
         ast.name.to_s
-      when Ast::InstanceVariable
-        ast.name.to_s
+
       else
         raise "CANNOT GENERATE #{ast.inspect}"
       end
