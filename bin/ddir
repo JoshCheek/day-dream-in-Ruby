@@ -19,4 +19,4 @@ if ARGV.include? 'zomg'
   parse_opts[:body] = File.read 'zomg'
 end
 
-p Ddir.parse parse_opts
+puts Ddir.generate Ddir.parse parse_opts

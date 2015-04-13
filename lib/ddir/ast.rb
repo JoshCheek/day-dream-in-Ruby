@@ -67,15 +67,15 @@ module Ddir
 
 
     class BinaryExpression < Ast
-      attr_accessor :left_child, :operator, :right_Child
-      def initialize(left_child, operator, right_Child)
+      attr_accessor :left_child, :operator, :right_child
+      def initialize(left_child, operator, right_child)
         self.left_child  = left_child
         self.operator    = operator
-        self.right_Child = right_Child
+        self.right_child = right_child
       end
 
       def children
-        [left_child, operator, right_Child]
+        [left_child, operator, right_child]
       end
     end
 
