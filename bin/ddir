@@ -2,8 +2,12 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'ddir'
 
+example_input_filename = File.expand_path '../example/example_input.ddir', __dir__
+example_input          = File.read example_input_filename
+
 parse_opts = {
   errstream: $stderr,
+  body:      example_input,
   body:      <<-BODY.gsub(/^    /, ''),
     -> (x) x + x
 
@@ -44,9 +48,5 @@ parse_opts = {
     #     .chars.each_slice 2 (c1 + c2)
   BODY
 }
-
-if ARGV.include? 'zomg'
-  parse_opts[:body] = File.read 'zomg'
-end
 
 puts Ddir.generate Ddir.parse parse_opts
