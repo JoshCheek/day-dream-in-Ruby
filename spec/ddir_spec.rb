@@ -136,6 +136,109 @@ RSpec.describe 'My language' do
           }
       end
     end
+
+    example 'pushing it a bit' do
+      ddir_code = <<-DDIR.gsub /^\s*/, ''
+        x + x
+        x - @y
+        x - @y
+        abc.def.ghi
+        -> (some_arg, other_arg) some_arg + x - y.abc 123 (x) x + @x + other_arg
+      DDIR
+      parses! ddir_code, expressions: [
+        { type: :binary_expression, operator: :+ },
+        { type: :binary_expression, operator: :- },
+        { type: :binary_expression, operator: :- },
+        { type: :send_message, name: :ghi, receiver: {
+            type: :send_message, name: :def, receiver: {
+              type: :local_variable, name: :abc
+            },
+          },
+        },
+        { type: :entry_location, body: {
+            type: :block, param_names: [:some_arg, :other_arg], body: {
+              type:        :binary_expression,
+              left_child:  { type: :local_variable, name: :some_arg },
+              operator:    :+,
+              right_child: {
+                type:        :binary_expression,
+                left_child:  { type: :local_variable, name: :x },
+                operator:    :-,
+                right_child: {
+                  type:      :send_message,
+                  name:      :abc,
+                  receiver:  { type: :local_variable, name: :y },
+                  arguments: [ {type: :integer, value: 123} ],
+                  block:     {
+                    param_names: [:x],
+                    body:        {
+                      type:        :binary_expression,
+                      operator:    :+,
+                      left_child:  { type: :local_variable, name: :x },
+                      right_child: {
+                        type:        :binary_expression,
+                        left_child:  { type: :instance_variable, name: :@x },
+                        operator:    :+,
+                        right_child: { type: :local_variable, name: :other_arg},
+                      }
+                    }
+                  }
+                },
+              },
+            },
+          },
+        },
+      ]
+    end
+
+    example 'pushing it a bit more' do
+      ddir_code = <<-DDIR
+        @.a.a2
+          b
+            .c
+            .c2
+          .d
+            e
+        x.b
+      DDIR
+      ddir_code.gsub! /^#{ddir_code[/\A */]}/, ''
+      parses! ddir_code, expressions: [
+        { type: :send_message, name: :d, block: {
+            param_names: [],
+            body: [{type: :local_variable, name: :e}]
+          }, receiver: {
+            type: :send_message, name: :a2, arguments: [], block: {
+              param_names: [],
+              body:        [
+                { type:      :send_message,
+                  name:      :c2,
+                  arguments: [],
+                  block:     nil,
+                  receiver:  {
+                    type:      :send_message,
+                    name:      :c,
+                    arguments: [],
+                    block:     nil,
+                    receiver:  { type: :local_variable, name: :b },
+                  },
+                },
+              ],
+            },
+            receiver: {
+              type:      :send_message,
+              name:      :a,
+              arguments: [],
+              block:     nil,
+              receiver:  { type: :self },
+            }
+          }
+        },
+        { type: :send_message, name: :b, arguments: [], block: nil, receiver: {
+            type: :local_variable, name: :x,
+          },
+        },
+      ]
+    end
   end
 
   context 'Generated code' do
@@ -247,7 +350,8 @@ RSpec.describe 'My language' do
         expect(eval '@.abc <- 123 ').to eq 123
         expect(sent).to eq 123
       end
-      xit 'can call private setters on self, and returns the assigned value' do
+      it 'can call private setters on self, and returns the assigned value' do
+        # not convinced, I assume the code is being run in a private context, and so it is able to call the setter, but w/e, it's good enough for now
         sent = nil
         define(:abc=, private: true) { |x| sent = x }
         expect(eval '@.abc <- 123 ').to eq 123

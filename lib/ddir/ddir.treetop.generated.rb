@@ -975,7 +975,7 @@ module DayDreamInRuby
   module BinaryOpCall1
     def to_ast(context, lhs)
       Ddir::Ast::BinaryExpression.new left_child:  lhs,
-                                      operator:    operator.text_value,
+                                      operator:    operator.text_value.intern,
                                       right_child: rhs.to_ast(context)
     end
   end
