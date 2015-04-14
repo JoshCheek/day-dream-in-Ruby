@@ -67,11 +67,11 @@ grammar DayDreamInRuby
   end
 
   rule send_message
-    "." name:identifier args:(sp expression)* sp? maybe_block:block? {
+    "." name:identifier suffix:('!' / '?' / '') args:(sp expression)* sp? maybe_block:block? {
       def to_ast(receiver_ast)
         Ddir::Ast::SendMessage.new \
           receiver_ast,
-          name.text_value.intern,
+          (name.text_value + suffix.text_value).intern,
           args.elements.map { |arg| arg.expression.to_ast },
           (maybe_block.to_ast unless maybe_block.empty?)
       end

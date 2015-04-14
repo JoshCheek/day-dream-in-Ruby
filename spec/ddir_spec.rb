@@ -41,7 +41,7 @@ RSpec.describe 'My language' do
       parses! '@', type: :self
     end
 
-    specify 'method calls are to the RHS of a "."' do
+    specify 'method calls are identifiers to the RHS of a "."' do
       parses! 'a.b',
         type:      :send_message,
         receiver:  { type: :local_variable, name: :a },
@@ -60,6 +60,11 @@ RSpec.describe 'My language' do
           block:     nil,
           receiver:  { type: :local_variable, name: :x },
         }
+    end
+
+    specify 'method calls may end in !, and ?' do
+      parses! 'a.b?', name: :b?
+      parses! 'a.b!', name: :b!
     end
 
     specify 'spaces delimit method arguments' do
@@ -201,13 +206,16 @@ RSpec.describe 'My language' do
       are 'indicated by an arg list and inline body' do
         expect(call_block '(x) x + x', 1).to eq 2
       end
-
       are 'indicated by an arg list and indentation' do
         expect(call_block "(x)\n  x + x", 1).to eq 2
       end
-
       are 'indicated by indentation without an arg list' do
         expect(call_block "\n  123").to eq 123
+      end
+      are 'exited when the indentation decreases' do
+        pending
+        expect(call_block "\n  x <- 1\n  defined? x").to eq 'local variable'
+        expect(call_block "\n  x <- 1\ndefined? x").to eq nil
       end
     end
 

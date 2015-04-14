@@ -535,12 +535,16 @@ module DayDreamInRuby
       elements[1]
     end
 
-    def args
+    def suffix
       elements[2]
     end
 
+    def args
+      elements[3]
+    end
+
     def maybe_block
-      elements[4]
+      elements[5]
     end
   end
 
@@ -548,7 +552,7 @@ module DayDreamInRuby
     def to_ast(receiver_ast)
       Ddir::Ast::SendMessage.new \
         receiver_ast,
-        name.text_value.intern,
+        (name.text_value + suffix.text_value).intern,
         args.elements.map { |arg| arg.expression.to_ast },
         (maybe_block.to_ast unless maybe_block.empty?)
     end
@@ -578,46 +582,85 @@ module DayDreamInRuby
       r2 = _nt_identifier
       s0 << r2
       if r2
-        s3, i3 = [], index
-        loop do
-          i4, s4 = index, []
-          r5 = _nt_sp
-          s4 << r5
+        i3 = index
+        if has_terminal?('!', false, index)
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure('!')
+          r4 = nil
+        end
+        if r4
+          r3 = r4
+        else
+          if has_terminal?('?', false, index)
+            r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure('?')
+            r5 = nil
+          end
           if r5
-            r6 = _nt_expression
-            s4 << r6
-          end
-          if s4.last
-            r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-            r4.extend(SendMessage0)
+            r3 = r5
           else
-            @index = i4
-            r4 = nil
-          end
-          if r4
-            s3 << r4
-          else
-            break
+            if has_terminal?('', false, index)
+              r6 = instantiate_node(SyntaxNode,input, index...(index + 0))
+              @index += 0
+            else
+              terminal_parse_failure('')
+              r6 = nil
+            end
+            if r6
+              r3 = r6
+            else
+              @index = i3
+              r3 = nil
+            end
           end
         end
-        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
         s0 << r3
         if r3
-          r8 = _nt_sp
-          if r8
-            r7 = r8
-          else
-            r7 = instantiate_node(SyntaxNode,input, index...index)
+          s7, i7 = [], index
+          loop do
+            i8, s8 = index, []
+            r9 = _nt_sp
+            s8 << r9
+            if r9
+              r10 = _nt_expression
+              s8 << r10
+            end
+            if s8.last
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              r8.extend(SendMessage0)
+            else
+              @index = i8
+              r8 = nil
+            end
+            if r8
+              s7 << r8
+            else
+              break
+            end
           end
+          r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
           s0 << r7
           if r7
-            r10 = _nt_block
-            if r10
-              r9 = r10
+            r12 = _nt_sp
+            if r12
+              r11 = r12
             else
-              r9 = instantiate_node(SyntaxNode,input, index...index)
+              r11 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s0 << r9
+            s0 << r11
+            if r11
+              r14 = _nt_block
+              if r14
+                r13 = r14
+              else
+                r13 = instantiate_node(SyntaxNode,input, index...index)
+              end
+              s0 << r13
+            end
           end
         end
       end
