@@ -240,6 +240,16 @@ module DayDreamInRuby
   end
 
   module ExpressionModifiers4
+    def nl
+      elements[1]
+    end
+
+    def modifier
+      elements[3]
+    end
+  end
+
+  module ExpressionModifiers5
     def to_ast(to_modify)
       modifier.to_ast to_modify
     end
@@ -278,7 +288,7 @@ module DayDreamInRuby
     end
     if r1
       r0 = r1
-      r0.extend(ExpressionModifiers4)
+      r0.extend(ExpressionModifiers5)
     else
       i5, s5 = index, []
       r6 = _nt_send_assignemnt_message
@@ -292,7 +302,7 @@ module DayDreamInRuby
       end
       if r5
         r0 = r5
-        r0.extend(ExpressionModifiers4)
+        r0.extend(ExpressionModifiers5)
       else
         i7, s7 = index, []
         r8 = _nt_send_message
@@ -306,7 +316,7 @@ module DayDreamInRuby
         end
         if r7
           r0 = r7
-          r0.extend(ExpressionModifiers4)
+          r0.extend(ExpressionModifiers5)
         else
           i9, s9 = index, []
           r11 = _nt_sp
@@ -329,10 +339,47 @@ module DayDreamInRuby
           end
           if r9
             r0 = r9
-            r0.extend(ExpressionModifiers4)
+            r0.extend(ExpressionModifiers5)
           else
-            @index = i0
-            r0 = nil
+            i13, s13 = index, []
+            r15 = _nt_sp
+            if r15
+              r14 = r15
+            else
+              r14 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s13 << r14
+            if r14
+              r16 = _nt_nl
+              s13 << r16
+              if r16
+                r18 = _nt_sp
+                if r18
+                  r17 = r18
+                else
+                  r17 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s13 << r17
+                if r17
+                  r19 = _nt_send_message
+                  s13 << r19
+                end
+              end
+            end
+            if s13.last
+              r13 = instantiate_node(SyntaxNode,input, i13...index, s13)
+              r13.extend(ExpressionModifiers4)
+            else
+              @index = i13
+              r13 = nil
+            end
+            if r13
+              r0 = r13
+              r0.extend(ExpressionModifiers5)
+            else
+              @index = i0
+              r0 = nil
+            end
           end
         end
       end

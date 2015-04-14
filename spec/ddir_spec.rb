@@ -74,7 +74,14 @@ RSpec.describe 'My language' do
         ]
     end
 
-    specify 'lines beginning with method calls are invoked on the result of the previous line'
+    specify 'lines beginning with method calls are invoked on the result of the previous line' do
+      parses! "@\n  .a 1",
+        type:      :send_message,
+        receiver:  {type: :self},
+        name:      :a,
+        block:     nil,
+        arguments: [{type: :integer, value: 1}]
+    end
 
     specify 'setters are method calls on the LHS of an assignment arrow' do
       parses! 'a <- 1',
