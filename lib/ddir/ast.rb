@@ -145,8 +145,8 @@ module Ddir
 
 
     class EntryLocation < Ast
-      attr_accessor :name, :body
-      def initialize(name:, body:, **rest)
+      attr_accessor :name, :body, :depth
+      def initialize(name:, body:, depth:, **rest)
         self.name = name
         self.body = body
         super rest
@@ -159,6 +159,10 @@ module Ddir
       end
       def via_method?
         !via_class?
+      end
+      def child_at(depth)
+        self.body ||= Block.new(depth: depth)
+        body.child_at(depth)
       end
     end
 

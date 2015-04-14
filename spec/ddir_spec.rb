@@ -261,9 +261,20 @@ RSpec.describe 'My language' do
         expect(e.call 11).to eq 22
       end
 
-      it 'can be named classes' do
-        e = eval '-> :A ()', wrap: true
+      it 'can be named classes with inline blocks' do
+        e = eval '-> :A () @ivar <- 123', wrap: true
         expect(e::A).to be_a_kind_of Class
+        expect(e::A.instance_variable_get(:@ivar)).to eq 123
+      end
+
+      it 'can be named classes with nextline blocks' do
+        e = eval "-> :A ()\n  @ivar <- 123", wrap: true
+        expect(e::A).to be_a_kind_of Class
+        expect(e::A.instance_variable_get(:@ivar)).to eq 123
+
+        e = eval "-> :A\n  @ivar <- 123", wrap: true
+        expect(e::A).to be_a_kind_of Class
+        expect(e::A.instance_variable_get(:@ivar)).to eq 123
       end
     end
 

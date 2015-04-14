@@ -141,10 +141,13 @@ grammar DayDreamInRuby
   end
 
   rule entry_location
-    '->' sp? name:symbol? sp? body:block {
+    '->' sp? name:symbol? sp? body:block? {
       def to_ast(context)
         name_symbol = name.empty? ? :call : name.to_ast(context).value
-        Ddir::Ast::EntryLocation.new name: name_symbol, body: body.to_ast(context)
+        Ddir::Ast::EntryLocation.new \
+          depth: context.depth,
+          name:  name_symbol,
+          body:  (body.to_ast(context) unless body.empty?)
       end
     }
   end

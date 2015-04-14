@@ -943,7 +943,10 @@ module DayDreamInRuby
   module EntryLocation1
     def to_ast(context)
       name_symbol = name.empty? ? :call : name.to_ast(context).value
-      Ddir::Ast::EntryLocation.new name: name_symbol, body: body.to_ast(context)
+      Ddir::Ast::EntryLocation.new \
+        depth: context.depth,
+        name:  name_symbol,
+        body:  (body.to_ast(context) unless body.empty?)
     end
   end
 
@@ -992,7 +995,12 @@ module DayDreamInRuby
           end
           s0 << r6
           if r6
-            r8 = _nt_block
+            r9 = _nt_block
+            if r9
+              r8 = r9
+            else
+              r8 = instantiate_node(SyntaxNode,input, index...index)
+            end
             s0 << r8
           end
         end
