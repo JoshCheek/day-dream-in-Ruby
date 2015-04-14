@@ -210,7 +210,7 @@ RSpec.describe 'My language' do
       ]
     end
 
-    example 'pushing it a bit more', t:true do
+    example 'pushing it a bit more' do
       ddir_code = <<-DDIR
         @.a.a2
           b
@@ -298,7 +298,9 @@ RSpec.describe 'My language' do
         it 'defines methods' do
           e = eval "-> :A ()\n"\
                    "  -> :get () @var\n"\
-                   "  -> :set () @var <- :omg", wrap: true
+                   "\n"\
+                   "  -> :set () @var <- :omg",
+                   wrap: true
           a = e::A.new
           expect(a.get).to eq nil
           a.set

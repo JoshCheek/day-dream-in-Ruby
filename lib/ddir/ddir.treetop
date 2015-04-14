@@ -11,13 +11,13 @@ grammar DayDreamInRuby
 
   rule expressions
     ( indentation matched:(
-        expression:expression {
+        expression:expression sp? {
           def declare_ast(context, depth)
             context.add_child depth, expression.to_ast(context)
           end
         }
         /
-        modifier:expression_modifier {
+        modifier:expression_modifier sp? {
           def declare_ast(context, depth)
             context.modify depth do |ast|
               modifier.to_ast context, ast
@@ -31,14 +31,14 @@ grammar DayDreamInRuby
           end
         }
         /
-        '#' [^\n]* {
+        '#' [^\n]* sp? {
           def declare_ast(context, depth)
             # ideally we would push these through,
             # but that would make generation hard,
             # and this project is mostly just a thought experiment
           end
         }
-      ) sp? nl?)* {
+      ) nl?)* {
       def to_ast(context)
         context.push_expressions do
           elements.each { |el|
