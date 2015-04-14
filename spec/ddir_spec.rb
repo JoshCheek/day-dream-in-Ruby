@@ -317,6 +317,17 @@ RSpec.describe 'My language' do
           expect(a.get).to eq nil
           a.set
           expect(a.get).to eq :omg
+
+          e = eval "-> :A ()\n"\
+                   "  -> :get\n"\
+                   "    @var\n"\
+                   "  -> :set ()\n"\
+                   "    @var <- :omg\n",
+                   wrap: true
+          a = e::A.new
+          expect(a.get).to eq nil
+          a.set
+          expect(a.get).to eq :omg
         end
       end
     end

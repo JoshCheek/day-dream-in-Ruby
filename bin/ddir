@@ -26,12 +26,12 @@ parse_opts = {
         from_literal + from_local + from_ivar + from_method
 
       -> :chaining_with_blocks
-    #   [*'a'..'c']
-    #     .map (c) c.upcase
-    #     .map (c)
-    #       c.downcase
-    #        .upcase
-    #        .chars.join '.'
+        'a'.upto 'c'
+          .map (c) c.upcase
+          .map (c)
+            c.downcase
+              .upcase
+    #         .chars.join '.'
     #     .map (c.downcase)
     #     .map (c*2)
     #     .map.with_index (c.upcase, i*2)

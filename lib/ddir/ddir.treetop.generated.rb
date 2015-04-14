@@ -56,6 +56,7 @@ module DayDreamInRuby
 
   module Expressions1
     def declare_ast(context, depth)
+      context.update_depth depth
       context.add_child depth, expression.to_ast(context)
     end
   end
@@ -107,6 +108,7 @@ module DayDreamInRuby
     def to_ast(context)
       context.push_expressions do
         elements.each { |el|
+          # p el.indentation.depth => el.text_value
           # if the indentation increased
           # then it is a child of the last element, which is expected to be a block
           el.matched.declare_ast context, el.indentation.depth
