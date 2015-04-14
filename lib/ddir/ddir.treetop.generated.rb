@@ -62,7 +62,7 @@ module DayDreamInRuby
   end
 
   module Expressions2
-    def modifier
+    def modifiers
       elements[0]
     end
 
@@ -70,8 +70,10 @@ module DayDreamInRuby
 
   module Expressions3
     def declare_ast(context, depth)
-      context.modify depth do |ast|
-        modifier.to_ast context, ast
+      modifiers.elements.each do |modifier|
+        context.modify depth do |ast|
+          modifier.to_ast context, ast
+        end
       end
     end
   end
@@ -159,16 +161,30 @@ module DayDreamInRuby
           r3 = r4
         else
           i8, s8 = index, []
-          r9 = _nt_expression_modifier
+          s9, i9 = [], index
+          loop do
+            r10 = _nt_expression_modifier
+            if r10
+              s9 << r10
+            else
+              break
+            end
+          end
+          if s9.empty?
+            @index = i9
+            r9 = nil
+          else
+            r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+          end
           s8 << r9
           if r9
-            r11 = _nt_sp
-            if r11
-              r10 = r11
+            r12 = _nt_sp
+            if r12
+              r11 = r12
             else
-              r10 = instantiate_node(SyntaxNode,input, index...index)
+              r11 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s8 << r10
+            s8 << r11
           end
           if s8.last
             r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
@@ -181,57 +197,57 @@ module DayDreamInRuby
           if r8
             r3 = r8
           else
-            r12 = _nt_nl
-            r12.extend(Expressions4)
-            if r12
-              r3 = r12
+            r13 = _nt_nl
+            r13.extend(Expressions4)
+            if r13
+              r3 = r13
             else
-              i13, s13 = index, []
+              i14, s14 = index, []
               if has_terminal?('#', false, index)
-                r14 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
                 @index += 1
               else
                 terminal_parse_failure('#')
-                r14 = nil
+                r15 = nil
               end
-              s13 << r14
-              if r14
-                s15, i15 = [], index
+              s14 << r15
+              if r15
+                s16, i16 = [], index
                 loop do
                   if has_terminal?('\G[^\\n]', true, index)
-                    r16 = true
+                    r17 = true
                     @index += 1
                   else
-                    r16 = nil
+                    r17 = nil
                   end
-                  if r16
-                    s15 << r16
+                  if r17
+                    s16 << r17
                   else
                     break
                   end
                 end
-                r15 = instantiate_node(SyntaxNode,input, i15...index, s15)
-                s13 << r15
-                if r15
-                  r18 = _nt_sp
-                  if r18
-                    r17 = r18
+                r16 = instantiate_node(SyntaxNode,input, i16...index, s16)
+                s14 << r16
+                if r16
+                  r19 = _nt_sp
+                  if r19
+                    r18 = r19
                   else
-                    r17 = instantiate_node(SyntaxNode,input, index...index)
+                    r18 = instantiate_node(SyntaxNode,input, index...index)
                   end
-                  s13 << r17
+                  s14 << r18
                 end
               end
-              if s13.last
-                r13 = instantiate_node(SyntaxNode,input, i13...index, s13)
-                r13.extend(Expressions5)
-                r13.extend(Expressions6)
+              if s14.last
+                r14 = instantiate_node(SyntaxNode,input, i14...index, s14)
+                r14.extend(Expressions5)
+                r14.extend(Expressions6)
               else
-                @index = i13
-                r13 = nil
+                @index = i14
+                r14 = nil
               end
-              if r13
-                r3 = r13
+              if r14
+                r3 = r14
               else
                 @index = i3
                 r3 = nil
@@ -241,13 +257,13 @@ module DayDreamInRuby
         end
         s1 << r3
         if r3
-          r20 = _nt_nl
-          if r20
-            r19 = r20
+          r21 = _nt_nl
+          if r21
+            r20 = r21
           else
-            r19 = instantiate_node(SyntaxNode,input, index...index)
+            r20 = instantiate_node(SyntaxNode,input, index...index)
           end
-          s1 << r19
+          s1 << r20
         end
       end
       if s1.last

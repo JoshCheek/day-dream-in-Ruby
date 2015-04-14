@@ -18,10 +18,12 @@ grammar DayDreamInRuby
           end
         }
         /
-        modifier:expression_modifier sp? {
+        modifiers:expression_modifier+ sp? {
           def declare_ast(context, depth)
-            context.modify depth do |ast|
-              modifier.to_ast context, ast
+            modifiers.elements.each do |modifier|
+              context.modify depth do |ast|
+                modifier.to_ast context, ast
+              end
             end
           end
         }

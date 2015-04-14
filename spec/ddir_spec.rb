@@ -434,6 +434,9 @@ RSpec.describe 'My language' do
         define(:abc) { |a, &b| "arg: #{a.inspect}, block: #{b.call}" }
         expect(eval '@.abc 1 () 2').to eq "arg: 1, block: 2"
       end
+      it 'can repeatedly chain methods on indented lines' do
+        expect(eval "'ab'\n  .chars.join '.'").to eq "a.b"
+      end
     end
 
     context 'local variables' do

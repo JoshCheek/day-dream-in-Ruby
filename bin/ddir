@@ -13,8 +13,8 @@ parse_opts = {
       @.attr_accessor :z2
 
     # -> :initialize (@x, y, @z:100, z2:)
-    #   @.y <- y
-    #   @z2 <- z2
+        @.y <- y
+        @z2 <- z2
 
       -> :inline_body () 1 + 2
 
@@ -31,7 +31,7 @@ parse_opts = {
           .map (c)
             c.downcase
               .upcase
-    #         .chars.join '.'
+              .chars.join '.'
     #     .map (c.downcase)
     #     .map (c*2)
     #     .map.with_index (c.upcase, i*2)
@@ -40,7 +40,7 @@ parse_opts = {
     #         str << "\#{index}: \#{char}"
     #       else
     #         str << "nothin"
-    #     .chars.each_slice 2 (c1, c2) c1 + c2
+          .chars.each_slice 2 (c1, c2) c1 + c2
     #     .chars.each_slice 2 (c1 + c2)
   BODY
 }
