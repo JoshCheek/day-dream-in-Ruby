@@ -139,6 +139,21 @@ RSpec.describe 'My language' do
             body: { name: :b, receiver: {name: :a} }
           }
       end
+
+      specify 'the body is anything indented on the next line' do
+        parses! "@.m ()\n  a\n  b", block: {
+            body: [
+              { type: :local_variable, name: :a },
+              { type: :local_variable, name: :b },
+            ]
+          }
+        parses! "@.m\n  a\n  b", block: {
+            body: [
+              { type: :local_variable, name: :a },
+              { type: :local_variable, name: :b },
+            ]
+          }
+      end
     end
 
     example 'pushing it a bit' do
@@ -195,7 +210,7 @@ RSpec.describe 'My language' do
       ]
     end
 
-    example 'pushing it a bit more' do
+    example 'pushing it a bit more', t:true do
       ddir_code = <<-DDIR
         @.a.a2
           b
@@ -256,25 +271,39 @@ RSpec.describe 'My language' do
     end
 
     context 'entry locations' do
-      it 'can be anonymous functions' do
-        e = eval '-> (x) x + x', wrap: true
-        expect(e.call 11).to eq 22
+      context 'at the toplevel' do
+        it 'can be anonymous functions' do
+          e = eval '-> (x) x + x', wrap: true
+          expect(e.call 11).to eq 22
+        end
+
+        it 'can be named classes with inline blocks' do
+          e = eval '-> :A () @ivar <- 123', wrap: true
+          expect(e::A).to be_a_kind_of Class
+          expect(e::A.instance_variable_get(:@ivar)).to eq 123
+        end
+
+        it 'can be named classes with nextline blocks' do
+          e = eval "-> :A ()\n  @ivar <- 123", wrap: true
+          expect(e::A).to be_a_kind_of Class
+          expect(e::A.instance_variable_get(:@ivar)).to eq 123
+
+          e = eval "-> :A\n  @ivar <- 123", wrap: true
+          expect(e::A).to be_a_kind_of Class
+          expect(e::A.instance_variable_get(:@ivar)).to eq 123
+        end
       end
 
-      it 'can be named classes with inline blocks' do
-        e = eval '-> :A () @ivar <- 123', wrap: true
-        expect(e::A).to be_a_kind_of Class
-        expect(e::A.instance_variable_get(:@ivar)).to eq 123
-      end
-
-      it 'can be named classes with nextline blocks' do
-        e = eval "-> :A ()\n  @ivar <- 123", wrap: true
-        expect(e::A).to be_a_kind_of Class
-        expect(e::A.instance_variable_get(:@ivar)).to eq 123
-
-        e = eval "-> :A\n  @ivar <- 123", wrap: true
-        expect(e::A).to be_a_kind_of Class
-        expect(e::A.instance_variable_get(:@ivar)).to eq 123
+      context 'within a class definition' do
+        it 'defines methods' do
+          e = eval "-> :A ()\n"\
+                   "  -> :get () @var\n"\
+                   "  -> :set () @var <- :omg", wrap: true
+          a = e::A.new
+          expect(a.get).to eq nil
+          a.set
+          expect(a.get).to eq :omg
+        end
       end
     end
 

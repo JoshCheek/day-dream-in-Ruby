@@ -67,7 +67,7 @@ module DayDreamInRuby
 
   module Expressions3
     def declare_ast(context, depth)
-      context.modify depth-1 do |ast|
+      context.modify depth do |ast|
         modifier.to_ast context, ast
       end
     end
@@ -75,7 +75,7 @@ module DayDreamInRuby
 
   module Expressions4
     def declare_ast(context, depth)
-      # noop
+      # noop (allows empty lines)
     end
   end
 

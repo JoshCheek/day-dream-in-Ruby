@@ -24,15 +24,16 @@ module Ddir
       end
 
       def add_child(depth, child)
+        update_depth depth
         exprs_at(depth).add_child child
       end
 
       def modify(depth, &block)
-        exprs_at(depth).modify_child(&block)
+        update_depth depth
+        exprs_at(depth-1).modify_child(&block)
       end
 
       def exprs_at(depth)
-        update_depth depth
         current_expressions.child_at depth
       end
 
@@ -147,8 +148,9 @@ module Ddir
     class EntryLocation < Ast
       attr_accessor :name, :body, :depth
       def initialize(name:, body:, depth:, **rest)
-        self.name = name
-        self.body = body
+        self.name  = name
+        self.body  = body
+        self.depth = depth
         super rest
       end
       def children
@@ -161,7 +163,7 @@ module Ddir
         !via_class?
       end
       def child_at(depth)
-        self.body ||= Block.new(depth: depth)
+        self.body ||= Block.new(depth: self.depth)
         body.child_at(depth)
       end
     end
@@ -212,7 +214,7 @@ module Ddir
       end
 
       def child_at(depth)
-        self.block ||= Block.new(depth: depth)
+        self.block ||= Block.new(depth: self.depth)
         block.child_at(depth)
       end
     end
@@ -236,7 +238,7 @@ module Ddir
       end
 
       def child_at(depth)
-        self.body ||= Expressions.new depth: depth
+        self.body ||= Expressions.new depth: self.depth+1
         body.child_at(depth)
       end
     end

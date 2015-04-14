@@ -15,9 +15,8 @@ parse_opts = {
     #  -> :initialize (@x, y, @z:100, z2:)
     #    @.y <- y
     #    @z2 <- z2
-  BODY
 
-    #  -> :inline_body () 1 + 2
+      -> :inline_body () 1 + 2
 
     #  -> :multiline_body
     #    from_literal <- 123
@@ -25,6 +24,8 @@ parse_opts = {
     #    from_ivar    <- @z
     #    from_method  <- @.z
     #    from_literal + from_local + from_ivar + from_method
+
+  BODY
 
     #  -> :chaining_with_blocks
     #    [*'a'..'c']

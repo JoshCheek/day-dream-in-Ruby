@@ -42,6 +42,9 @@ module Ddir
         elsif entry == :toplevel && ast.via_class?
           body = generate ast.body, :class, indent(indentation)
           "const_set(#{ast.name.inspect}, Class.new #{body})"
+        elsif entry == :class && ast.via_method?
+          body = generate ast.body, :method, indentation
+          "define_method(#{ast.name.inspect})#{body}"
         else
           raise "Unknown entry location: #{entry.inspect}"
         end
