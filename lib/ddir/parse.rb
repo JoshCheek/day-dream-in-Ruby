@@ -1,6 +1,10 @@
+require 'ddir/ast'
+
 module Ddir
   def self.parse(opts)
-    Parse.new(opts).parse.to_ast
+    context    = Ast::Context.new
+    parse_tree = Parse.new(opts).parse
+    parse_tree.to_ast(context)
   end
 
   # locate relevant files, check their times

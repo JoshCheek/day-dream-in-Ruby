@@ -3,98 +3,119 @@ require 'treetop/runtime'
 grammar DayDreamInRuby
   rule body
     exprs:expressions {
-      def to_ast
-        Ddir::Ast::Body.new exprs.to_ast
+      def to_ast(context)
+        Ddir::Ast::Body.new expressions: exprs.to_ast(context)
       end
     }
   end
 
   rule expressions
-    (sp? expression sp? nl?)* {
-      def to_ast
-        if elements.size == 1
-          elements.first.expression.to_ast
-        else
-          Ddir::Ast::Expressions.new \
-            elements.map { |el| el.expression.to_ast }
+    (indentation expression sp? nl?)* {
+      def to_ast(context)
+        context.push_expressions do
+          elements.each do |el|
+            context.update_depth el.indentation.depth
+            child = el.expression.to_ast(context)
+            context.current_expression.children << child
+          end
         end
+      end
+    }
+  end
+
+  rule indentation
+    ' '* {
+      def depth
+        text_value.length / 2
       end
     }
   end
 
   rule expression
     head:(entry_location / variable / self / integer / symbol)
-    tail:expression_modifiers* {
-      def to_ast
-        tail.elements.inject head.to_ast do |ast, modifier|
-          modifier.to_ast ast
+    tail:expression_modifier* {
+      def to_ast(context)
+        tail.elements.inject head.to_ast(context) do |ast, modifier|
+          modifier.to_ast context, ast
         end
       end
     }
   end
 
-  rule expression_modifiers
-    ( (sp?        modifier:binary_op_call)
-    / (           modifier:send_assignemnt_message)
-    / (           modifier:send_message)
-    / (sp?        modifier:assignment)
-    / (sp? nl sp? modifier:send_message)
+  rule expression_modifier
+    sp? modifier:(
+      binary_op_call
+    / send_assignemnt_message
+    / send_message
+    / assignment
+    / multiline_expression_modifier
     ) {
-      def to_ast(to_modify)
-        modifier.to_ast to_modify
+      def to_ast(context, to_modify)
+        modifier.to_ast context, to_modify
+      end
+    }
+  end
+
+  rule multiline_expression_modifier
+    nl indentation modifier:send_message {
+      def to_ast(context, to_modify)
+        context.update_depth indentation.depth
+        modifier.to_ast context, to_modify
       end
     }
   end
 
   rule assignment
     '<-' sp? value:expression {
-      def to_ast(target_ast)
-        Ddir::Ast::Assignment.new target_ast, value.to_ast
+      def to_ast(context, target_ast)
+        Ddir::Ast::Assignment.new target: target_ast, value: value.to_ast(context)
       end
     }
   end
 
   rule send_assignemnt_message
     '.' name:identifier sp? assignment {
-      def to_ast(receiver_ast)
+      def to_ast(context, receiver_ast)
         Ddir::Ast::SendMessage.new \
-          receiver_ast,
-          :"#{name.text_value}=",
-          [assignment.value.to_ast], # args
-          nil                        # no block
+          receiver:  receiver_ast,
+          name:      :"#{name.text_value}=",
+          arguments: [assignment.value.to_ast(context)], # args
+          block:     nil                                 # no block
       end
     }
   end
 
   rule send_message
     "." name:identifier suffix:('!' / '?' / '') args:(sp expression)* sp? maybe_block:block? {
-      def to_ast(receiver_ast)
+      def to_ast(context, receiver_ast)
         Ddir::Ast::SendMessage.new \
-          receiver_ast,
-          (name.text_value + suffix.text_value).intern,
-          args.elements.map { |arg| arg.expression.to_ast },
-          (maybe_block.to_ast unless maybe_block.empty?)
+          receiver:  receiver_ast,
+          name:      (name.text_value + suffix.text_value).intern,
+          arguments: args.elements.map { |arg| arg.expression.to_ast context },
+          block:     (maybe_block.to_ast context unless maybe_block.empty?)
       end
     }
   end
 
   rule block
-    '(' params ')' nl sp  body:expressions {
-      def to_ast
-        Ddir::Ast::Block.new params.ordered_names, body.to_ast
+    '(' params ')' nl indentation  body:expressions {
+      def to_ast(context)
+        context.update_depth indentation.depth
+        Ddir::Ast::Block.new param_names: params.ordered_names, body: body.to_ast(context)
       end
     }
     /
-    nl sp body:expressions {
-      def to_ast
-        Ddir::Ast::Block.new [], body.to_ast
+    nl indentation body:expressions {
+      def to_ast(context)
+        context.update_depth indentation.depth
+        Ddir::Ast::Block.new param_names: [], body: body.to_ast(context)
       end
     }
     /
     '(' params ')' sp? body:expression?  {
-      def to_ast
-        body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast
-        Ddir::Ast::Block.new params.ordered_names, body_ast
+      def to_ast(context)
+        body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast(context)
+        Ddir::Ast::Block.new param_names: params.ordered_names, body: body_ast
       end
     }
   end
@@ -113,26 +134,26 @@ grammar DayDreamInRuby
 
   rule entry_location
     '->' sp? name:symbol? sp? body:block {
-      def to_ast
-        name_symbol = name.empty? ? :call : name.to_ast.value
-        Ddir::Ast::EntryLocation.new name_symbol, body.to_ast
+      def to_ast(context)
+        name_symbol = name.empty? ? :call : name.to_ast.value(context)
+        Ddir::Ast::EntryLocation.new name: name_symbol, body: body.to_ast(context)
       end
     }
   end
 
   rule binary_op_call
     operator sp? rhs:expression {
-      def to_ast(lhs)
-        Ddir::Ast::BinaryExpression.new lhs,
-                                        operator.text_value,
-                                        rhs.to_ast
+      def to_ast(context, lhs)
+        Ddir::Ast::BinaryExpression.new left_child:  lhs,
+                                        operator:    operator.text_value,
+                                        right_child: rhs.to_ast(context)
       end
     }
   end
 
   rule self
     "@" {
-      def to_ast
+      def to_ast(context)
         Ddir::Ast::Self.new
       end
     }
@@ -140,24 +161,24 @@ grammar DayDreamInRuby
 
   rule variable
     variable:(local_variable / instance_variable) {
-      def to_ast
-        variable.to_ast
+      def to_ast(context)
+        variable.to_ast(context)
       end
     }
   end
 
   rule local_variable
     identifier {
-      def to_ast
-        Ddir::Ast::LocalVariable.new text_value.intern
+      def to_ast(context)
+        Ddir::Ast::LocalVariable.new name: text_value.intern
       end
     }
   end
 
   rule instance_variable
     "@" identifier {
-      def to_ast
-        Ddir::Ast::InstanceVariable.new text_value.intern
+      def to_ast(context)
+        Ddir::Ast::InstanceVariable.new name: text_value.intern
       end
     }
   end
@@ -180,16 +201,16 @@ grammar DayDreamInRuby
 
   rule integer
     [0-9]+ {
-      def to_ast
-        Ddir::Ast::Integer.new text_value.to_i
+      def to_ast(context)
+        Ddir::Ast::Integer.new value: text_value.to_i
       end
     }
   end
 
   rule symbol
     ':' value:[_a-zA-Z0-9]+ {
-      def to_ast
-        Ddir::Ast::Symbol.new value.text_value.intern
+      def to_ast(context)
+        Ddir::Ast::Symbol.new value: value.text_value.intern
       end
     }
   end

@@ -14,8 +14,8 @@ module DayDreamInRuby
   end
 
   module Body1
-    def to_ast
-      Ddir::Ast::Body.new exprs.to_ast
+    def to_ast(context)
+      Ddir::Ast::Body.new expressions: exprs.to_ast(context)
     end
   end
 
@@ -48,6 +48,10 @@ module DayDreamInRuby
   end
 
   module Expressions0
+    def indentation
+      elements[0]
+    end
+
     def expression
       elements[1]
     end
@@ -55,12 +59,13 @@ module DayDreamInRuby
   end
 
   module Expressions1
-    def to_ast
-      if elements.size == 1
-        elements.first.expression.to_ast
-      else
-        Ddir::Ast::Expressions.new \
-          elements.map { |el| el.expression.to_ast }
+    def to_ast(context)
+      context.push_expressions do
+        elements.each do |el|
+          context.update_depth el.indentation.depth
+          child = el.expression.to_ast(context)
+          context.current_expression.children << child
+        end
       end
     end
   end
@@ -79,32 +84,27 @@ module DayDreamInRuby
     s0, i0 = [], index
     loop do
       i1, s1 = index, []
-      r3 = _nt_sp
-      if r3
-        r2 = r3
-      else
-        r2 = instantiate_node(SyntaxNode,input, index...index)
-      end
+      r2 = _nt_indentation
       s1 << r2
       if r2
-        r4 = _nt_expression
-        s1 << r4
-        if r4
-          r6 = _nt_sp
-          if r6
-            r5 = r6
-          else
-            r5 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s1 << r5
+        r3 = _nt_expression
+        s1 << r3
+        if r3
+          r5 = _nt_sp
           if r5
-            r8 = _nt_nl
-            if r8
-              r7 = r8
+            r4 = r5
+          else
+            r4 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s1 << r4
+          if r4
+            r7 = _nt_nl
+            if r7
+              r6 = r7
             else
-              r7 = instantiate_node(SyntaxNode,input, index...index)
+              r6 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s1 << r7
+            s1 << r6
           end
         end
       end
@@ -129,6 +129,46 @@ module DayDreamInRuby
     r0
   end
 
+  module Indentation0
+    def depth
+      text_value.length / 2
+    end
+  end
+
+  def _nt_indentation
+    start_index = index
+    if node_cache[:indentation].has_key?(index)
+      cached = node_cache[:indentation][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    s0, i0 = [], index
+    loop do
+      if has_terminal?(' ', false, index)
+        r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+        @index += 1
+      else
+        terminal_parse_failure(' ')
+        r1 = nil
+      end
+      if r1
+        s0 << r1
+      else
+        break
+      end
+    end
+    r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+    r0.extend(Indentation0)
+
+    node_cache[:indentation][start_index] = r0
+
+    r0
+  end
+
   module Expression0
     def head
       elements[0]
@@ -140,9 +180,9 @@ module DayDreamInRuby
   end
 
   module Expression1
-    def to_ast
-      tail.elements.inject head.to_ast do |ast, modifier|
-        modifier.to_ast ast
+    def to_ast(context)
+      tail.elements.inject head.to_ast(context) do |ast, modifier|
+        modifier.to_ast context, ast
       end
     end
   end
@@ -191,7 +231,7 @@ module DayDreamInRuby
     if r1
       s7, i7 = [], index
       loop do
-        r8 = _nt_expression_modifiers
+        r8 = _nt_expression_modifier
         if r8
           s7 << r8
         else
@@ -215,50 +255,22 @@ module DayDreamInRuby
     r0
   end
 
-  module ExpressionModifiers0
+  module ExpressionModifier0
     def modifier
       elements[1]
     end
   end
 
-  module ExpressionModifiers1
-    def modifier
-      elements[0]
+  module ExpressionModifier1
+    def to_ast(context, to_modify)
+      modifier.to_ast context, to_modify
     end
   end
 
-  module ExpressionModifiers2
-    def modifier
-      elements[0]
-    end
-  end
-
-  module ExpressionModifiers3
-    def modifier
-      elements[1]
-    end
-  end
-
-  module ExpressionModifiers4
-    def nl
-      elements[1]
-    end
-
-    def modifier
-      elements[3]
-    end
-  end
-
-  module ExpressionModifiers5
-    def to_ast(to_modify)
-      modifier.to_ast to_modify
-    end
-  end
-
-  def _nt_expression_modifiers
+  def _nt_expression_modifier
     start_index = index
-    if node_cache[:expression_modifiers].has_key?(index)
-      cached = node_cache[:expression_modifiers][index]
+    if node_cache[:expression_modifier].has_key?(index)
+      cached = node_cache[:expression_modifier][index]
       if cached
         cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
         @index = cached.interval.end
@@ -266,126 +278,112 @@ module DayDreamInRuby
       return cached
     end
 
-    i0 = index
-    i1, s1 = index, []
-    r3 = _nt_sp
-    if r3
-      r2 = r3
-    else
-      r2 = instantiate_node(SyntaxNode,input, index...index)
-    end
-    s1 << r2
+    i0, s0 = index, []
+    r2 = _nt_sp
     if r2
-      r4 = _nt_binary_op_call
-      s1 << r4
-    end
-    if s1.last
-      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
-      r1.extend(ExpressionModifiers0)
+      r1 = r2
     else
-      @index = i1
-      r1 = nil
+      r1 = instantiate_node(SyntaxNode,input, index...index)
     end
+    s0 << r1
     if r1
-      r0 = r1
-      r0.extend(ExpressionModifiers5)
-    else
-      i5, s5 = index, []
-      r6 = _nt_send_assignemnt_message
-      s5 << r6
-      if s5.last
-        r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-        r5.extend(ExpressionModifiers1)
+      i3 = index
+      r4 = _nt_binary_op_call
+      if r4
+        r3 = r4
       else
-        @index = i5
-        r5 = nil
-      end
-      if r5
-        r0 = r5
-        r0.extend(ExpressionModifiers5)
-      else
-        i7, s7 = index, []
-        r8 = _nt_send_message
-        s7 << r8
-        if s7.last
-          r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
-          r7.extend(ExpressionModifiers2)
+        r5 = _nt_send_assignemnt_message
+        if r5
+          r3 = r5
         else
-          @index = i7
-          r7 = nil
-        end
-        if r7
-          r0 = r7
-          r0.extend(ExpressionModifiers5)
-        else
-          i9, s9 = index, []
-          r11 = _nt_sp
-          if r11
-            r10 = r11
+          r6 = _nt_send_message
+          if r6
+            r3 = r6
           else
-            r10 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s9 << r10
-          if r10
-            r12 = _nt_assignment
-            s9 << r12
-          end
-          if s9.last
-            r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
-            r9.extend(ExpressionModifiers3)
-          else
-            @index = i9
-            r9 = nil
-          end
-          if r9
-            r0 = r9
-            r0.extend(ExpressionModifiers5)
-          else
-            i13, s13 = index, []
-            r15 = _nt_sp
-            if r15
-              r14 = r15
+            r7 = _nt_assignment
+            if r7
+              r3 = r7
             else
-              r14 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s13 << r14
-            if r14
-              r16 = _nt_nl
-              s13 << r16
-              if r16
-                r18 = _nt_sp
-                if r18
-                  r17 = r18
-                else
-                  r17 = instantiate_node(SyntaxNode,input, index...index)
-                end
-                s13 << r17
-                if r17
-                  r19 = _nt_send_message
-                  s13 << r19
-                end
+              r8 = _nt_multiline_expression_modifier
+              if r8
+                r3 = r8
+              else
+                @index = i3
+                r3 = nil
               end
             end
-            if s13.last
-              r13 = instantiate_node(SyntaxNode,input, i13...index, s13)
-              r13.extend(ExpressionModifiers4)
-            else
-              @index = i13
-              r13 = nil
-            end
-            if r13
-              r0 = r13
-              r0.extend(ExpressionModifiers5)
-            else
-              @index = i0
-              r0 = nil
-            end
           end
         end
       end
+      s0 << r3
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(ExpressionModifier0)
+      r0.extend(ExpressionModifier1)
+    else
+      @index = i0
+      r0 = nil
     end
 
-    node_cache[:expression_modifiers][start_index] = r0
+    node_cache[:expression_modifier][start_index] = r0
+
+    r0
+  end
+
+  module MultilineExpressionModifier0
+    def nl
+      elements[0]
+    end
+
+    def indentation
+      elements[1]
+    end
+
+    def modifier
+      elements[2]
+    end
+  end
+
+  module MultilineExpressionModifier1
+    def to_ast(context, to_modify)
+      context.update_depth indentation.depth
+      modifier.to_ast context, to_modify
+    end
+  end
+
+  def _nt_multiline_expression_modifier
+    start_index = index
+    if node_cache[:multiline_expression_modifier].has_key?(index)
+      cached = node_cache[:multiline_expression_modifier][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    r1 = _nt_nl
+    s0 << r1
+    if r1
+      r2 = _nt_indentation
+      s0 << r2
+      if r2
+        r3 = _nt_send_message
+        s0 << r3
+      end
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(MultilineExpressionModifier0)
+      r0.extend(MultilineExpressionModifier1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:multiline_expression_modifier][start_index] = r0
 
     r0
   end
@@ -397,8 +395,8 @@ module DayDreamInRuby
   end
 
   module Assignment1
-    def to_ast(target_ast)
-      Ddir::Ast::Assignment.new target_ast, value.to_ast
+    def to_ast(context, target_ast)
+      Ddir::Ast::Assignment.new target: target_ast, value: value.to_ast(context)
     end
   end
 
@@ -460,12 +458,12 @@ module DayDreamInRuby
   end
 
   module SendAssignemntMessage1
-    def to_ast(receiver_ast)
+    def to_ast(context, receiver_ast)
       Ddir::Ast::SendMessage.new \
-        receiver_ast,
-        :"#{name.text_value}=",
-        [assignment.value.to_ast], # args
-        nil                        # no block
+        receiver:  receiver_ast,
+        name:      :"#{name.text_value}=",
+        arguments: [assignment.value.to_ast(context)], # args
+        block:     nil                                 # no block
     end
   end
 
@@ -549,12 +547,12 @@ module DayDreamInRuby
   end
 
   module SendMessage2
-    def to_ast(receiver_ast)
+    def to_ast(context, receiver_ast)
       Ddir::Ast::SendMessage.new \
-        receiver_ast,
-        (name.text_value + suffix.text_value).intern,
-        args.elements.map { |arg| arg.expression.to_ast },
-        (maybe_block.to_ast unless maybe_block.empty?)
+        receiver:  receiver_ast,
+        name:      (name.text_value + suffix.text_value).intern,
+        arguments: args.elements.map { |arg| arg.expression.to_ast context },
+        block:     (maybe_block.to_ast context unless maybe_block.empty?)
     end
   end
 
@@ -688,7 +686,7 @@ module DayDreamInRuby
       elements[3]
     end
 
-    def sp
+    def indentation
       elements[4]
     end
 
@@ -698,8 +696,9 @@ module DayDreamInRuby
   end
 
   module Block1
-    def to_ast
-      Ddir::Ast::Block.new params.ordered_names, body.to_ast
+    def to_ast(context)
+      context.update_depth indentation.depth
+      Ddir::Ast::Block.new param_names: params.ordered_names, body: body.to_ast(context)
     end
   end
 
@@ -708,7 +707,7 @@ module DayDreamInRuby
       elements[0]
     end
 
-    def sp
+    def indentation
       elements[1]
     end
 
@@ -718,8 +717,9 @@ module DayDreamInRuby
   end
 
   module Block3
-    def to_ast
-      Ddir::Ast::Block.new [], body.to_ast
+    def to_ast(context)
+      context.update_depth indentation.depth
+      Ddir::Ast::Block.new param_names: [], body: body.to_ast(context)
     end
   end
 
@@ -734,9 +734,9 @@ module DayDreamInRuby
   end
 
   module Block5
-    def to_ast
-      body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast
-      Ddir::Ast::Block.new params.ordered_names, body_ast
+    def to_ast(context)
+      body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast(context)
+      Ddir::Ast::Block.new param_names: params.ordered_names, body: body_ast
     end
   end
 
@@ -777,7 +777,7 @@ module DayDreamInRuby
           r5 = _nt_nl
           s1 << r5
           if r5
-            r6 = _nt_sp
+            r6 = _nt_indentation
             s1 << r6
             if r6
               r7 = _nt_expressions
@@ -802,7 +802,7 @@ module DayDreamInRuby
       r9 = _nt_nl
       s8 << r9
       if r9
-        r10 = _nt_sp
+        r10 = _nt_indentation
         s8 << r10
         if r10
           r11 = _nt_expressions
@@ -1002,9 +1002,9 @@ module DayDreamInRuby
   end
 
   module EntryLocation1
-    def to_ast
-      name_symbol = name.empty? ? :call : name.to_ast.value
-      Ddir::Ast::EntryLocation.new name_symbol, body.to_ast
+    def to_ast(context)
+      name_symbol = name.empty? ? :call : name.to_ast.value(context)
+      Ddir::Ast::EntryLocation.new name: name_symbol, body: body.to_ast(context)
     end
   end
 
@@ -1084,10 +1084,10 @@ module DayDreamInRuby
   end
 
   module BinaryOpCall1
-    def to_ast(lhs)
-      Ddir::Ast::BinaryExpression.new lhs,
-                                      operator.text_value,
-                                      rhs.to_ast
+    def to_ast(context, lhs)
+      Ddir::Ast::BinaryExpression.new left_child:  lhs,
+                                      operator:    operator.text_value,
+                                      right_child: rhs.to_ast(context)
     end
   end
 
@@ -1133,7 +1133,7 @@ module DayDreamInRuby
   end
 
   module Self0
-    def to_ast
+    def to_ast(context)
       Ddir::Ast::Self.new
     end
   end
@@ -1170,8 +1170,8 @@ module DayDreamInRuby
   end
 
   module Variable1
-    def to_ast
-      variable.to_ast
+    def to_ast(context)
+      variable.to_ast(context)
     end
   end
 
@@ -1216,8 +1216,8 @@ module DayDreamInRuby
   end
 
   module LocalVariable0
-    def to_ast
-      Ddir::Ast::LocalVariable.new text_value.intern
+    def to_ast(context)
+      Ddir::Ast::LocalVariable.new name: text_value.intern
     end
   end
 
@@ -1247,8 +1247,8 @@ module DayDreamInRuby
   end
 
   module InstanceVariable1
-    def to_ast
-      Ddir::Ast::InstanceVariable.new text_value.intern
+    def to_ast(context)
+      Ddir::Ast::InstanceVariable.new name: text_value.intern
     end
   end
 
@@ -1448,8 +1448,8 @@ module DayDreamInRuby
   end
 
   module Integer0
-    def to_ast
-      Ddir::Ast::Integer.new text_value.to_i
+    def to_ast(context)
+      Ddir::Ast::Integer.new value: text_value.to_i
     end
   end
 
@@ -1498,8 +1498,8 @@ module DayDreamInRuby
   end
 
   module Symbol1
-    def to_ast
-      Ddir::Ast::Symbol.new value.text_value.intern
+    def to_ast(context)
+      Ddir::Ast::Symbol.new value: value.text_value.intern
     end
   end
 

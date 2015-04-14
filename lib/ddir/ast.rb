@@ -2,7 +2,38 @@ require 'pp'
 
 module Ddir
   class Ast
+
+    class Context
+      attr_reader :depth
+      def initialize
+        @depth = 0
+        @expression_stack = []
+      end
+      def push_expressions
+        exprs = Expressions.new depth: depth
+        @expression_stack.push exprs
+        yield
+        @expression_stack.pop while @expression_stack.include? exprs
+        exprs
+      end
+      def update_depth(new_depth)
+        @depth = new_depth
+        @expression_stack.pop while depth < current_expression.depth
+      end
+      def current_expression
+        @expression_stack.last
+      end
+    end
+
+
     include Enumerable
+
+    attr_accessor :depth, :parent
+
+    def initialize(depth:0, parent:nil)
+      self.depth  = depth
+      self.parent = parent
+    end
 
     def children
       raise NotImplementedError, 'Override #children in subclasses'
@@ -40,10 +71,22 @@ module Ddir
     end
 
 
+    class Null < Ast
+      def initialize(**rest)
+        super({parent: self}.merge(rest))
+      end
+      def children
+        []
+      end
+    end
+
+
     class Body < Ast
       attr_accessor :expressions
 
-      def initialize(expressions)
+      def initialize(expressions:nil, **rest)
+        super rest
+        expressions ||= Ast::Null.new(parent: self, depth: depth)
         self.expressions = expressions # expressions node, not a collection
       end
 
@@ -56,8 +99,9 @@ module Ddir
     class Expressions < Ast
       attr_accessor :expressions
 
-      def initialize(expressions)
+      def initialize(expressions:[], **rest)
         self.expressions = expressions
+        super rest
       end
 
       def children
@@ -68,9 +112,11 @@ module Ddir
 
     class EntryLocation < Ast
       attr_accessor :name, :body
-      def initialize(name, body)
+      def initialize(name:, body:nil, **rest)
         self.name = name
         self.body = body
+        body.parent = self if body
+        super rest
       end
       def children
         [name, body]
@@ -86,10 +132,13 @@ module Ddir
 
     class BinaryExpression < Ast
       attr_accessor :left_child, :operator, :right_child
-      def initialize(left_child, operator, right_child)
-        self.left_child  = left_child
-        self.operator    = operator
-        self.right_child = right_child
+      def initialize(left_child:nil, operator:, right_child:nil, **rest)
+        self.left_child    = left_child
+        self.operator      = operator
+        self.right_child   = right_child
+        left_child.parent  = self if left_child
+        right_child.parent = self if right_child
+        super rest
       end
 
       def children
@@ -100,9 +149,10 @@ module Ddir
 
     class Assignment < Ast
       attr_accessor :target, :value
-      def initialize(target, value)
-        self.target = target
-        self.value  = value
+      def initialize(value:, **rest)
+        self.value   = value
+        value.parent = self
+        super rest
       end
       def children
         [target, value]
@@ -113,11 +163,15 @@ module Ddir
     class SendMessage < Ast
       attr_accessor :receiver, :name, :arguments, :block
 
-      def initialize(receiver, name, arguments, block)
-        self.receiver  = receiver
-        self.name      = name
-        self.arguments = arguments
-        self.block     = block
+      def initialize(receiver:nil, name:, arguments:[], block:nil, **rest)
+        self.receiver   = receiver
+        self.name       = name
+        self.arguments  = arguments
+        self.block      = block
+        block.parent    = self if block
+        receiver.parent = self if receiver
+        arguments.each { |arg| arg.parent = self }
+        super rest
       end
 
       def children
@@ -128,9 +182,12 @@ module Ddir
 
     class Block < Ast
       attr_accessor :param_names, :body
-      def initialize(param_names, body)
+      def initialize(param_names:, body:, **rest)
+        super rest
         self.param_names = param_names
         self.body        = body
+        body.parent      = self
+        super rest
       end
 
       def children
@@ -138,15 +195,18 @@ module Ddir
       end
     end
 
+
     class ValueLiteral < Ast
       attr_accessor :value
-      def initialize(value)
+      def initialize(value, **rest)
         self.value = value
+        super rest
       end
       def children
         [value]
       end
     end
+
 
     class Integer < ValueLiteral
     end
@@ -162,6 +222,7 @@ module Ddir
       end
     end
 
+
     class None < Ast
       def children
         []
@@ -172,8 +233,9 @@ module Ddir
     class Variable < Ast
       attr_accessor :name
 
-      def initialize(name)
+      def initialize(name:, **rest)
         self.name = name
+        super rest
       end
 
       def children
