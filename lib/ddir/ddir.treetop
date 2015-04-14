@@ -30,6 +30,14 @@ grammar DayDreamInRuby
             # noop
           end
         }
+        /
+        '#' [^\n]* {
+          def declare_ast(context, depth)
+            # ideally we would push these through,
+            # but that would make generation hard,
+            # and this project is mostly just a thought experiment
+          end
+        }
       ) sp? nl?)* {
       def to_ast(context)
         context.push_expressions do

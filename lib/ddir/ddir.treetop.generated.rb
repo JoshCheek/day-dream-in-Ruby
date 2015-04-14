@@ -80,6 +80,17 @@ module DayDreamInRuby
   end
 
   module Expressions5
+  end
+
+  module Expressions6
+    def declare_ast(context, depth)
+      # ideally we would push these through,
+      # but that would make generation hard,
+      # and this project is mostly just a thought experiment
+    end
+  end
+
+  module Expressions7
     def indentation
       elements[0]
     end
@@ -90,7 +101,7 @@ module DayDreamInRuby
 
   end
 
-  module Expressions6
+  module Expressions8
     def to_ast(context)
       context.push_expressions do
         elements.each { |el|
@@ -153,34 +164,73 @@ module DayDreamInRuby
             if r8
               r3 = r8
             else
-              @index = i3
-              r3 = nil
+              i9, s9 = index, []
+              if has_terminal?('#', false, index)
+                r10 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
+              else
+                terminal_parse_failure('#')
+                r10 = nil
+              end
+              s9 << r10
+              if r10
+                s11, i11 = [], index
+                loop do
+                  if has_terminal?('\G[^\\n]', true, index)
+                    r12 = true
+                    @index += 1
+                  else
+                    r12 = nil
+                  end
+                  if r12
+                    s11 << r12
+                  else
+                    break
+                  end
+                end
+                r11 = instantiate_node(SyntaxNode,input, i11...index, s11)
+                s9 << r11
+              end
+              if s9.last
+                r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+                r9.extend(Expressions5)
+                r9.extend(Expressions6)
+              else
+                @index = i9
+                r9 = nil
+              end
+              if r9
+                r3 = r9
+              else
+                @index = i3
+                r3 = nil
+              end
             end
           end
         end
         s1 << r3
         if r3
-          r10 = _nt_sp
-          if r10
-            r9 = r10
+          r14 = _nt_sp
+          if r14
+            r13 = r14
           else
-            r9 = instantiate_node(SyntaxNode,input, index...index)
+            r13 = instantiate_node(SyntaxNode,input, index...index)
           end
-          s1 << r9
-          if r9
-            r12 = _nt_nl
-            if r12
-              r11 = r12
+          s1 << r13
+          if r13
+            r16 = _nt_nl
+            if r16
+              r15 = r16
             else
-              r11 = instantiate_node(SyntaxNode,input, index...index)
+              r15 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s1 << r11
+            s1 << r15
           end
         end
       end
       if s1.last
         r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
-        r1.extend(Expressions5)
+        r1.extend(Expressions7)
       else
         @index = i1
         r1 = nil
@@ -192,7 +242,7 @@ module DayDreamInRuby
       end
     end
     r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-    r0.extend(Expressions6)
+    r0.extend(Expressions8)
 
     node_cache[:expressions][start_index] = r0
 

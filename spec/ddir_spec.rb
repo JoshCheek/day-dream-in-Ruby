@@ -41,6 +41,10 @@ RSpec.describe 'My language' do
       parses! '@', type: :self
     end
 
+    specify 'hashes introduce comments until the end of the line' do
+      parses! "# o m g\n1", type: :integer, value: 1
+    end
+
     specify 'method calls are identifiers to the RHS of a "."' do
       parses! 'a.b',
         type:      :send_message,
