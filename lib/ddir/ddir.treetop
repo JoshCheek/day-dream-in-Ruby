@@ -24,7 +24,13 @@ grammar DayDreamInRuby
             end
           end
         }
-      ) sp?  nl?)* {
+        /
+        nl {
+          def declare_ast(context, depth)
+            # noop
+          end
+        }
+      ) sp? nl?)* {
       def to_ast(context)
         context.push_expressions do
           elements.each { |el|

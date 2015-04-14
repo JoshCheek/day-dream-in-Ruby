@@ -188,6 +188,13 @@ RSpec.describe 'My language' do
       end
     end
 
+    context 'empty lines' do
+      are 'ignored' do
+        expect(eval '').to eq nil
+        expect(eval "x <- 1\n\nx").to eq 1
+      end
+    end
+
     def define(name, private:false, &block)
       singleton_class.class_eval do
         define_method name, &block

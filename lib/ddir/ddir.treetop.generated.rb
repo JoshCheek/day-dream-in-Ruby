@@ -74,6 +74,12 @@ module DayDreamInRuby
   end
 
   module Expressions4
+    def declare_ast(context, depth)
+      # noop
+    end
+  end
+
+  module Expressions5
     def indentation
       elements[0]
     end
@@ -84,7 +90,7 @@ module DayDreamInRuby
 
   end
 
-  module Expressions5
+  module Expressions6
     def to_ast(context)
       context.push_expressions do
         elements.each { |el|
@@ -142,33 +148,39 @@ module DayDreamInRuby
           if r6
             r3 = r6
           else
-            @index = i3
-            r3 = nil
+            r8 = _nt_nl
+            r8.extend(Expressions4)
+            if r8
+              r3 = r8
+            else
+              @index = i3
+              r3 = nil
+            end
           end
         end
         s1 << r3
         if r3
-          r9 = _nt_sp
-          if r9
-            r8 = r9
+          r10 = _nt_sp
+          if r10
+            r9 = r10
           else
-            r8 = instantiate_node(SyntaxNode,input, index...index)
+            r9 = instantiate_node(SyntaxNode,input, index...index)
           end
-          s1 << r8
-          if r8
-            r11 = _nt_nl
-            if r11
-              r10 = r11
+          s1 << r9
+          if r9
+            r12 = _nt_nl
+            if r12
+              r11 = r12
             else
-              r10 = instantiate_node(SyntaxNode,input, index...index)
+              r11 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s1 << r10
+            s1 << r11
           end
         end
       end
       if s1.last
         r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
-        r1.extend(Expressions4)
+        r1.extend(Expressions5)
       else
         @index = i1
         r1 = nil
@@ -180,7 +192,7 @@ module DayDreamInRuby
       end
     end
     r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-    r0.extend(Expressions5)
+    r0.extend(Expressions6)
 
     node_cache[:expressions][start_index] = r0
 
