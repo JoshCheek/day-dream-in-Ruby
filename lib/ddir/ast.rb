@@ -5,34 +5,49 @@ module Ddir
 
     class Context
       attr_reader :depth
+
       def initialize
         @depth = 0
-        @expression_stack = []
+        @expressions_stack = []
       end
+
       def push_expressions
         exprs = Expressions.new depth: depth
-        @expression_stack.push exprs
+        @expressions_stack.push exprs
         yield
-        @expression_stack.pop while @expression_stack.include? exprs
+        @expressions_stack.pop while @expressions_stack.include? exprs
         exprs
       end
+
+      def current_expressions
+        @expressions_stack.last
+      end
+
+      def add_child(depth, child)
+        exprs_at(depth).add_child child
+      end
+
+      def modify(depth, &block)
+        exprs_at(depth).modify_child(&block)
+      end
+
+      def exprs_at(depth)
+        update_depth depth
+        current_expressions.child_at depth
+      end
+
       def update_depth(new_depth)
         @depth = new_depth
-        @expression_stack.pop while depth < current_expression.depth
-      end
-      def current_expression
-        @expression_stack.last
+        @expressions_stack.pop while depth < current_expressions.depth
       end
     end
 
 
     include Enumerable
 
-    attr_accessor :depth, :parent
-
-    def initialize(depth:0, parent:nil)
-      self.depth  = depth
-      self.parent = parent
+    def initialize(attrs={})
+      return if attrs.empty?
+      raise "Additional attrs! #{attrs.inspect}"
     end
 
     def children
@@ -72,9 +87,6 @@ module Ddir
 
 
     class Null < Ast
-      def initialize(**rest)
-        super({parent: self}.merge(rest))
-      end
       def children
         []
       end
@@ -84,38 +96,59 @@ module Ddir
     class Body < Ast
       attr_accessor :expressions
 
-      def initialize(expressions:nil, **rest)
-        super rest
-        expressions ||= Ast::Null.new(parent: self, depth: depth)
+      def initialize(expressions:, **rest)
         self.expressions = expressions # expressions node, not a collection
+        super rest
       end
 
       def children
-        [expressions]
+        if expressions.length == 1
+          expressions.children
+        else
+          [expressions]
+        end
       end
     end
 
 
     class Expressions < Ast
-      attr_accessor :expressions
+      attr_accessor :expressions, :depth
 
-      def initialize(expressions:[], **rest)
+      def initialize(depth:, expressions:[], **rest)
         self.expressions = expressions
+        self.depth       = depth
         super rest
+      end
+
+      def length
+        expressions.length
       end
 
       def children
         expressions
+      end
+
+      def add_child(child)
+        children << child
+        child
+      end
+
+      def modify_child(&block)
+        children.push block.call children.pop
+      end
+
+      def child_at(depth)
+        return self if self.depth == depth
+        expressions.last.child_at(depth)
       end
     end
 
 
     class EntryLocation < Ast
       attr_accessor :name, :body
-      def initialize(name:, body:nil, **rest)
+      def initialize(name:, body:, **rest)
         self.name = name
         self.body = body
-        body.parent = self if body
         super rest
       end
       def children
@@ -132,12 +165,10 @@ module Ddir
 
     class BinaryExpression < Ast
       attr_accessor :left_child, :operator, :right_child
-      def initialize(left_child:nil, operator:, right_child:nil, **rest)
-        self.left_child    = left_child
-        self.operator      = operator
-        self.right_child   = right_child
-        left_child.parent  = self if left_child
-        right_child.parent = self if right_child
+      def initialize(left_child:, operator:, right_child:, **rest)
+        self.left_child  = left_child
+        self.operator    = operator
+        self.right_child = right_child
         super rest
       end
 
@@ -149,9 +180,9 @@ module Ddir
 
     class Assignment < Ast
       attr_accessor :target, :value
-      def initialize(value:, **rest)
-        self.value   = value
-        value.parent = self
+      def initialize(target:, value:, **rest)
+        self.target = target
+        self.value  = value
         super rest
       end
       def children
@@ -161,44 +192,55 @@ module Ddir
 
 
     class SendMessage < Ast
-      attr_accessor :receiver, :name, :arguments, :block
+      attr_accessor :receiver, :name, :arguments, :block, :depth
 
-      def initialize(receiver:nil, name:, arguments:[], block:nil, **rest)
-        self.receiver   = receiver
-        self.name       = name
-        self.arguments  = arguments
-        self.block      = block
-        block.parent    = self if block
-        receiver.parent = self if receiver
-        arguments.each { |arg| arg.parent = self }
+      def initialize(receiver:, name:, arguments:, block:, depth:, **rest)
+        self.receiver  = receiver
+        self.name      = name
+        self.arguments = arguments
+        self.block     = block
+        self.depth     = depth
         super rest
       end
 
       def children
         [receiver, '.', name, arguments, block]
       end
+
+      def child_at(depth)
+        self.block ||= Block.new(depth: depth)
+        block.child_at(depth)
+      end
     end
 
 
     class Block < Ast
-      attr_accessor :param_names, :body
-      def initialize(param_names:, body:, **rest)
-        super rest
+      attr_accessor :param_names, :body, :depth
+      def initialize(param_names:[], body:nil, depth:, **rest)
         self.param_names = param_names
         self.body        = body
-        body.parent      = self
+        self.depth       = depth
         super rest
+      end
+
+      def params?
+        param_names.any?
       end
 
       def children
         [body]
+      end
+
+      def child_at(depth)
+        self.body ||= Expressions.new depth: depth
+        body.child_at(depth)
       end
     end
 
 
     class ValueLiteral < Ast
       attr_accessor :value
-      def initialize(value, **rest)
+      def initialize(value:, **rest)
         self.value = value
         super rest
       end

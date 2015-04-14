@@ -4,12 +4,19 @@ require 'ddir'
 
 parse_opts = {
   errstream: $stderr,
-  body:      <<-BODY.gsub(/^\s*/, ''),
+  body:      <<-BODY.gsub(/^    /, ''),
     x + x
     x - @y
     x - @y
     abc.def.ghi
     -> (some_arg, other_arg) some_arg + x - y.abc 123 (x) x + @x + other_arg
+    @.a.a2
+      b
+        .c
+        .c2
+      .d
+        e
+    x.b
   BODY
 }
 

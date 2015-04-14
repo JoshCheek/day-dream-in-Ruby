@@ -64,7 +64,9 @@ module Ddir
             })#{generate ast.block, entry, indentation}"
 
       when :block
-        " { |#{ast.param_names.join ', '}|\n#{indent(indentation)}#{
+        params = ""
+        params = "|#{ast.param_names.join ', '}|" if ast.params?
+        " { #{params}\n#{indent(indentation)}#{
           generate ast.body, entry, indent(indentation)}\n#{indentation
         }}\n#{indentation}"
 

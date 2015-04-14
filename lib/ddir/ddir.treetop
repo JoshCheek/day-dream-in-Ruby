@@ -10,14 +10,28 @@ grammar DayDreamInRuby
   end
 
   rule expressions
-    (indentation expression sp? nl?)* {
+    ( indentation matched:(
+        expression:expression {
+          def declare_ast(context, depth)
+            context.add_child depth, expression.to_ast(context)
+          end
+        }
+        /
+        modifier:expression_modifier {
+          def declare_ast(context, depth)
+            context.modify depth-1 do |ast|
+              modifier.to_ast context, ast
+            end
+          end
+        }
+      ) sp?  nl?)* {
       def to_ast(context)
         context.push_expressions do
-          elements.each do |el|
-            context.update_depth el.indentation.depth
-            child = el.expression.to_ast(context)
-            context.current_expression.children << child
-          end
+          elements.each { |el|
+            # if the indentation increased
+            # then it is a child of the last element, which is expected to be a block
+            el.matched.declare_ast context, el.indentation.depth
+          }
         end
       end
     }
@@ -48,18 +62,8 @@ grammar DayDreamInRuby
     / send_assignemnt_message
     / send_message
     / assignment
-    / multiline_expression_modifier
     ) {
       def to_ast(context, to_modify)
-        modifier.to_ast context, to_modify
-      end
-    }
-  end
-
-  rule multiline_expression_modifier
-    nl indentation modifier:send_message {
-      def to_ast(context, to_modify)
-        context.update_depth indentation.depth
         modifier.to_ast context, to_modify
       end
     }
@@ -77,10 +81,11 @@ grammar DayDreamInRuby
     '.' name:identifier sp? assignment {
       def to_ast(context, receiver_ast)
         Ddir::Ast::SendMessage.new \
+          depth:     context.depth,
           receiver:  receiver_ast,
           name:      :"#{name.text_value}=",
-          arguments: [assignment.value.to_ast(context)], # args
-          block:     nil                                 # no block
+          arguments: [assignment.value.to_ast(context)],
+          block:     nil
       end
     }
   end
@@ -89,6 +94,7 @@ grammar DayDreamInRuby
     "." name:identifier suffix:('!' / '?' / '') args:(sp expression)* sp? maybe_block:block? {
       def to_ast(context, receiver_ast)
         Ddir::Ast::SendMessage.new \
+          depth:     context.depth,
           receiver:  receiver_ast,
           name:      (name.text_value + suffix.text_value).intern,
           arguments: args.elements.map { |arg| arg.expression.to_ast context },
@@ -98,24 +104,12 @@ grammar DayDreamInRuby
   end
 
   rule block
-    '(' params ')' nl indentation  body:expressions {
-      def to_ast(context)
-        context.update_depth indentation.depth
-        Ddir::Ast::Block.new param_names: params.ordered_names, body: body.to_ast(context)
-      end
-    }
-    /
-    nl indentation body:expressions {
-      def to_ast(context)
-        context.update_depth indentation.depth
-        Ddir::Ast::Block.new param_names: [], body: body.to_ast(context)
-      end
-    }
-    /
     '(' params ')' sp? body:expression?  {
       def to_ast(context)
-        body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast(context)
-        Ddir::Ast::Block.new param_names: params.ordered_names, body: body_ast
+        Ddir::Ast::Block.new \
+          depth:       context.depth,
+          param_names: params.ordered_names,
+          body:        (body.to_ast context unless body.empty?)
       end
     }
   end
@@ -135,7 +129,7 @@ grammar DayDreamInRuby
   rule entry_location
     '->' sp? name:symbol? sp? body:block {
       def to_ast(context)
-        name_symbol = name.empty? ? :call : name.to_ast.value(context)
+        name_symbol = name.empty? ? :call : name.to_ast(context).value
         Ddir::Ast::EntryLocation.new name: name_symbol, body: body.to_ast(context)
       end
     }

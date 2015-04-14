@@ -116,7 +116,7 @@ RSpec.describe 'My language' do
           receiver:  { type: :self },
           block:     {
             param_names: [],
-            body: { type: :none },
+            body: nil,
           }
       end
 
