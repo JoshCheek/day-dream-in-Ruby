@@ -213,9 +213,8 @@ RSpec.describe 'My language' do
         expect(call_block "\n  123").to eq 123
       end
       are 'exited when the indentation decreases' do
-        pending
-        expect(call_block "\n  x <- 1\n  defined? x").to eq 'local variable'
-        expect(call_block "\n  x <- 1\ndefined? x").to eq nil
+        expect(call_block "\n  x <- 1\n  @.defined? x").to eq 'local-variable'
+        expect(call_block "\n  x <- 1\n@.defined? x").to eq nil
       end
     end
 
