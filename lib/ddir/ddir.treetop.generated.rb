@@ -637,12 +637,30 @@ module DayDreamInRuby
   end
 
   module Block0
+    def params
+      elements[1]
+    end
+
+    def nl
+      elements[3]
+    end
+
+    def sp
+      elements[4]
+    end
+
     def body
-      elements[0]
+      elements[5]
     end
   end
 
   module Block1
+    def to_ast
+      Ddir::Ast::Block.new params.ordered_names, body.to_ast
+    end
+  end
+
+  module Block2
     def nl
       elements[0]
     end
@@ -656,21 +674,26 @@ module DayDreamInRuby
     end
   end
 
-  module Block2
+  module Block3
+    def to_ast
+      Ddir::Ast::Block.new [], body.to_ast
+    end
+  end
+
+  module Block4
     def params
       elements[1]
     end
 
-    def has_body
+    def body
       elements[4]
     end
   end
 
-  module Block3
+  module Block5
     def to_ast
-      body_ast = has_body.empty? ? Ddir::Ast::None.new : has_body.body.to_ast
-      Ddir::Ast::Block.new params.ordered_names,
-                           body_ast
+      body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast
+      Ddir::Ast::Block.new params.ordered_names, body_ast
     end
   end
 
@@ -685,92 +708,131 @@ module DayDreamInRuby
       return cached
     end
 
-    i0, s0 = index, []
+    i0 = index
+    i1, s1 = index, []
     if has_terminal?('(', false, index)
-      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      r2 = instantiate_node(SyntaxNode,input, index...(index + 1))
       @index += 1
     else
       terminal_parse_failure('(')
-      r1 = nil
+      r2 = nil
     end
-    s0 << r1
-    if r1
-      r2 = _nt_params
-      s0 << r2
-      if r2
+    s1 << r2
+    if r2
+      r3 = _nt_params
+      s1 << r3
+      if r3
         if has_terminal?(')', false, index)
-          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          r4 = instantiate_node(SyntaxNode,input, index...(index + 1))
           @index += 1
         else
           terminal_parse_failure(')')
-          r3 = nil
+          r4 = nil
         end
-        s0 << r3
-        if r3
-          r5 = _nt_sp
+        s1 << r4
+        if r4
+          r5 = _nt_nl
+          s1 << r5
           if r5
-            r4 = r5
-          else
-            r4 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s0 << r4
-          if r4
-            i7 = index
-            i8, s8 = index, []
-            r9 = _nt_expression
-            s8 << r9
-            if s8.last
-              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
-              r8.extend(Block0)
-            else
-              @index = i8
-              r8 = nil
+            r6 = _nt_sp
+            s1 << r6
+            if r6
+              r7 = _nt_expressions
+              s1 << r7
             end
-            if r8
-              r7 = r8
-            else
-              i10, s10 = index, []
-              r11 = _nt_nl
-              s10 << r11
-              if r11
-                r12 = _nt_sp
-                s10 << r12
-                if r12
-                  r13 = _nt_expressions
-                  s10 << r13
-                end
-              end
-              if s10.last
-                r10 = instantiate_node(SyntaxNode,input, i10...index, s10)
-                r10.extend(Block1)
-              else
-                @index = i10
-                r10 = nil
-              end
-              if r10
-                r7 = r10
-              else
-                @index = i7
-                r7 = nil
-              end
-            end
-            if r7
-              r6 = r7
-            else
-              r6 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s0 << r6
           end
         end
       end
     end
-    if s0.last
-      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-      r0.extend(Block2)
-      r0.extend(Block3)
+    if s1.last
+      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1.extend(Block0)
+      r1.extend(Block1)
     else
-      @index = i0
-      r0 = nil
+      @index = i1
+      r1 = nil
+    end
+    if r1
+      r0 = r1
+    else
+      i8, s8 = index, []
+      r9 = _nt_nl
+      s8 << r9
+      if r9
+        r10 = _nt_sp
+        s8 << r10
+        if r10
+          r11 = _nt_expressions
+          s8 << r11
+        end
+      end
+      if s8.last
+        r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+        r8.extend(Block2)
+        r8.extend(Block3)
+      else
+        @index = i8
+        r8 = nil
+      end
+      if r8
+        r0 = r8
+      else
+        i12, s12 = index, []
+        if has_terminal?('(', false, index)
+          r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure('(')
+          r13 = nil
+        end
+        s12 << r13
+        if r13
+          r14 = _nt_params
+          s12 << r14
+          if r14
+            if has_terminal?(')', false, index)
+              r15 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure(')')
+              r15 = nil
+            end
+            s12 << r15
+            if r15
+              r17 = _nt_sp
+              if r17
+                r16 = r17
+              else
+                r16 = instantiate_node(SyntaxNode,input, index...index)
+              end
+              s12 << r16
+              if r16
+                r19 = _nt_expression
+                if r19
+                  r18 = r19
+                else
+                  r18 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s12 << r18
+              end
+            end
+          end
+        end
+        if s12.last
+          r12 = instantiate_node(SyntaxNode,input, i12...index, s12)
+          r12.extend(Block4)
+          r12.extend(Block5)
+        else
+          @index = i12
+          r12 = nil
+        end
+        if r12
+          r0 = r12
+        else
+          @index = i0
+          r0 = nil
+        end
+      end
     end
 
     node_cache[:block][start_index] = r0

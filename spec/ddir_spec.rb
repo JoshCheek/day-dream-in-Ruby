@@ -206,7 +206,9 @@ RSpec.describe 'My language' do
         expect(call_block "(x)\n  x + x", 1).to eq 2
       end
 
-      are 'indicated by indentation without an arg list'
+      are 'indicated by indentation without an arg list' do
+        expect(call_block "\n  123").to eq 123
+      end
     end
 
     context 'method calls' do

@@ -79,11 +79,22 @@ grammar DayDreamInRuby
   end
 
   rule block
-    '(' params ')' sp? has_body:(body:expression / nl sp body:expressions)? {
+    '(' params ')' nl sp  body:expressions {
       def to_ast
-        body_ast = has_body.empty? ? Ddir::Ast::None.new : has_body.body.to_ast
-        Ddir::Ast::Block.new params.ordered_names,
-                             body_ast
+        Ddir::Ast::Block.new params.ordered_names, body.to_ast
+      end
+    }
+    /
+    nl sp body:expressions {
+      def to_ast
+        Ddir::Ast::Block.new [], body.to_ast
+      end
+    }
+    /
+    '(' params ')' sp? body:expression?  {
+      def to_ast
+        body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast
+        Ddir::Ast::Block.new params.ordered_names, body_ast
       end
     }
   end

@@ -121,7 +121,7 @@ module Ddir
       end
 
       def children
-        [receiver, '.', name, arguments]
+        [receiver, '.', name, arguments, block]
       end
     end
 
