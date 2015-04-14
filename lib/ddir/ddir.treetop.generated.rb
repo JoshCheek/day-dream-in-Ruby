@@ -637,18 +637,38 @@ module DayDreamInRuby
   end
 
   module Block0
-    def params
-      elements[1]
-    end
-
     def body
-      elements[4]
+      elements[0]
     end
   end
 
   module Block1
+    def nl
+      elements[0]
+    end
+
+    def sp
+      elements[1]
+    end
+
+    def body
+      elements[2]
+    end
+  end
+
+  module Block2
+    def params
+      elements[1]
+    end
+
+    def has_body
+      elements[4]
+    end
+  end
+
+  module Block3
     def to_ast
-      body_ast = body.empty? ? Ddir::Ast::None.new : body.to_ast
+      body_ast = has_body.empty? ? Ddir::Ast::None.new : has_body.body.to_ast
       Ddir::Ast::Block.new params.ordered_names,
                            body_ast
     end
@@ -695,7 +715,45 @@ module DayDreamInRuby
           end
           s0 << r4
           if r4
-            r7 = _nt_expression
+            i7 = index
+            i8, s8 = index, []
+            r9 = _nt_expression
+            s8 << r9
+            if s8.last
+              r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+              r8.extend(Block0)
+            else
+              @index = i8
+              r8 = nil
+            end
+            if r8
+              r7 = r8
+            else
+              i10, s10 = index, []
+              r11 = _nt_nl
+              s10 << r11
+              if r11
+                r12 = _nt_sp
+                s10 << r12
+                if r12
+                  r13 = _nt_expressions
+                  s10 << r13
+                end
+              end
+              if s10.last
+                r10 = instantiate_node(SyntaxNode,input, i10...index, s10)
+                r10.extend(Block1)
+              else
+                @index = i10
+                r10 = nil
+              end
+              if r10
+                r7 = r10
+              else
+                @index = i7
+                r7 = nil
+              end
+            end
             if r7
               r6 = r7
             else
@@ -708,8 +766,8 @@ module DayDreamInRuby
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
-      r0.extend(Block0)
-      r0.extend(Block1)
+      r0.extend(Block2)
+      r0.extend(Block3)
     else
       @index = i0
       r0 = nil

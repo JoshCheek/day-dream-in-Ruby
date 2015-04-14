@@ -183,22 +183,33 @@ RSpec.describe 'My language' do
       end
     end
 
+    def define(name, private:false, &block)
+      singleton_class.class_eval do
+        define_method name, &block
+        private(name) if private
+      end
+      methods = private ? private_methods : public_methods
+      expect(methods).to include name
+    end
+
     context 'blocks' do
-      are 'indicated by an arg list and inline body'
-      are 'indicated by an arg list and indentation'
+      def call_block(code, *args_to_pass)
+        define(:m) { |&block| block.call *args_to_pass }
+        eval "@.m #{code}"
+      end
+
+      are 'indicated by an arg list and inline body' do
+        expect(call_block '(x) x + x', 1).to eq 2
+      end
+
+      are 'indicated by an arg list and indentation' do
+        expect(call_block "(x)\n  x + x", 1).to eq 2
+      end
+
       are 'indicated by indentation without an arg list'
     end
 
     context 'method calls' do
-      def define(name, private:false, &block)
-        singleton_class.class_eval do
-          define_method name, &block
-          private(name) if private
-        end
-        methods = private ? private_methods : public_methods
-        expect(methods).to include name
-      end
-
       it 'can call public methods on self' do
         define(:abc, private: false) { 123 }
         expect(eval '@.abc').to eq 123
