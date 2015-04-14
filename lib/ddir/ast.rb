@@ -264,6 +264,10 @@ module Ddir
     end
 
 
+    class String < ValueLiteral
+    end
+
+
     class Self < Ast
       def children
         []

@@ -60,7 +60,7 @@ grammar DayDreamInRuby
   end
 
   rule expression
-    head:(entry_location / variable / self / integer / symbol)
+    head:(entry_location / variable / self / integer / symbol / string)
     tail:expression_modifier* {
       def to_ast(context)
         tail.elements.inject head.to_ast(context) do |ast, modifier|
@@ -222,6 +222,14 @@ grammar DayDreamInRuby
     ':' value:[_a-zA-Z0-9]+ {
       def to_ast(context)
         Ddir::Ast::Symbol.new value: value.text_value.intern
+      end
+    }
+  end
+
+  rule string
+    ('"' value:[^"]* '"' / "'" value:[^']* "'") {
+      def to_ast(context)
+        Ddir::Ast::String.new value: value.text_value
       end
     }
   end

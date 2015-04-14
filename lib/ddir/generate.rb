@@ -86,6 +86,9 @@ module Ddir
       when :symbol
         ":#{ast.value}"
 
+      when :string
+        ast.value.inspect
+
       when :local_variable, :instance_variable
         ast.name.to_s
 

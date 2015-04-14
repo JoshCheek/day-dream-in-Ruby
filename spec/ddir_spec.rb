@@ -22,6 +22,15 @@ RSpec.describe 'My language' do
       parses! ':A',   type: :symbol, value: :A
     end
 
+    specify 'strings are sequences of characters surrounded by quotes' do
+      parses! %(""),     type: :string, value: ''
+      parses! %(''),     type: :string, value: ""
+      parses! %("Aa 1"), type: :string, value: 'Aa 1'
+      parses! %('Aa 1'), type: :string, value: 'Aa 1'
+      parses! %('"a"'),  type: :string, value: '"a"'
+      parses! %("'a'"),  type: :string, value: "'a'"
+    end
+
     specify 'local vars are identifiers: start w/ lowercase a-z and underscores, bodies can also have digits and uppercase characters' do
       parses! 'x',   type: :local_variable, name: :x
       parses! '_',   type: :local_variable, name: :_
@@ -267,6 +276,9 @@ RSpec.describe 'My language' do
       end
       example ':abc is a symbol' do
         expect(eval ':abc').to eq :abc
+      end
+      example "'abc' is a string" do
+        expect(eval "'abc'").to eq 'abc'
       end
     end
 

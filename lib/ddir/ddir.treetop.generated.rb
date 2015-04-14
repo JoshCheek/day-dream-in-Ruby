@@ -360,8 +360,13 @@ module DayDreamInRuby
             if r6
               r1 = r6
             else
-              @index = i1
-              r1 = nil
+              r7 = _nt_string
+              if r7
+                r1 = r7
+              else
+                @index = i1
+                r1 = nil
+              end
             end
           end
         end
@@ -369,17 +374,17 @@ module DayDreamInRuby
     end
     s0 << r1
     if r1
-      s7, i7 = [], index
+      s8, i8 = [], index
       loop do
-        r8 = _nt_expression_modifier
-        if r8
-          s7 << r8
+        r9 = _nt_expression_modifier
+        if r9
+          s8 << r9
         else
           break
         end
       end
-      r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
-      s0 << r7
+      r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+      s0 << r8
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -1523,6 +1528,144 @@ module DayDreamInRuby
     end
 
     node_cache[:symbol][start_index] = r0
+
+    r0
+  end
+
+  module String0
+    def value
+      elements[1]
+    end
+
+  end
+
+  module String1
+    def value
+      elements[1]
+    end
+
+  end
+
+  module String2
+    def to_ast(context)
+      Ddir::Ast::String.new value: value.text_value
+    end
+  end
+
+  def _nt_string
+    start_index = index
+    if node_cache[:string].has_key?(index)
+      cached = node_cache[:string][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    i1, s1 = index, []
+    if has_terminal?('"', false, index)
+      r2 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
+    else
+      terminal_parse_failure('"')
+      r2 = nil
+    end
+    s1 << r2
+    if r2
+      s3, i3 = [], index
+      loop do
+        if has_terminal?('\G[^"]', true, index)
+          r4 = true
+          @index += 1
+        else
+          r4 = nil
+        end
+        if r4
+          s3 << r4
+        else
+          break
+        end
+      end
+      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+      s1 << r3
+      if r3
+        if has_terminal?('"', false, index)
+          r5 = instantiate_node(SyntaxNode,input, index...(index + 1))
+          @index += 1
+        else
+          terminal_parse_failure('"')
+          r5 = nil
+        end
+        s1 << r5
+      end
+    end
+    if s1.last
+      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1.extend(String0)
+    else
+      @index = i1
+      r1 = nil
+    end
+    if r1
+      r0 = r1
+      r0.extend(String2)
+    else
+      i6, s6 = index, []
+      if has_terminal?("'", false, index)
+        r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+        @index += 1
+      else
+        terminal_parse_failure("'")
+        r7 = nil
+      end
+      s6 << r7
+      if r7
+        s8, i8 = [], index
+        loop do
+          if has_terminal?('\G[^\']', true, index)
+            r9 = true
+            @index += 1
+          else
+            r9 = nil
+          end
+          if r9
+            s8 << r9
+          else
+            break
+          end
+        end
+        r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+        s6 << r8
+        if r8
+          if has_terminal?("'", false, index)
+            r10 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure("'")
+            r10 = nil
+          end
+          s6 << r10
+        end
+      end
+      if s6.last
+        r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+        r6.extend(String1)
+      else
+        @index = i6
+        r6 = nil
+      end
+      if r6
+        r0 = r6
+        r0.extend(String2)
+      else
+        @index = i0
+        r0 = nil
+      end
+    end
+
+    node_cache[:string][start_index] = r0
 
     r0
   end
