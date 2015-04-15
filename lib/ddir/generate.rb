@@ -107,9 +107,6 @@ module Ddir
       when :required_param
         "#{ast.name}:"
 
-      when :none
-        ''
-
       else
         raise "CANNOT GENERATE #{ast.inspect}"
       end

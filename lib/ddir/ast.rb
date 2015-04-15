@@ -99,13 +99,6 @@ module Ddir
     end
 
 
-    class Null < Ast
-      def children
-        []
-      end
-    end
-
-
     class Body < Ast
       attr_accessor :expressions
 
@@ -322,13 +315,6 @@ module Ddir
 
 
     class Self < Ast
-      def children
-        []
-      end
-    end
-
-
-    class None < Ast
       def children
         []
       end
