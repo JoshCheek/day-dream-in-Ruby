@@ -50,8 +50,31 @@ RSpec.describe 'My language' do
       parses! '@', type: :self
     end
 
-    specify 'hashes introduce comments until the end of the line' do
+    specify 'octothorpes introduce comments until the end of the line' do
       parses! "# o m g\n1", type: :integer, value: 1
+    end
+
+    context 'inline operators' do
+      it('supports +')  { parses! '1+1',  type: :binary_expression, operator: :+  }
+      it('supports -')  { parses! '1-1',  type: :binary_expression, operator: :-  }
+      it('supports <<') { parses! '1<<1', type: :binary_expression, operator: :<< }
+      it 'records the left and right sides as children' do
+        parses! '1+2', left_child:  { type: :integer, value: 1 },
+                       right_child: { type: :integer, value: 2 }
+      end
+      it 'supports whitespace on both sides of the operator' do
+        parses! '1 + 2', type:        :binary_expression,
+                         operator:    :+,
+                         left_child:  { type: :integer, value: 1 },
+                         right_child: { type: :integer, value: 2 }
+      end
+      it 'supports no whitespace on either side of the operator' do
+        parses! '1+2', type:        :binary_expression,
+                       operator:    :+,
+                       left_child:  { type: :integer, value: 1 },
+                       right_child: { type: :integer, value: 2 }
+      end
+      # we'll ignore whitespace on one side, b/c it gets hairy
     end
 
     specify 'method calls are identifiers to the RHS of a "."' do

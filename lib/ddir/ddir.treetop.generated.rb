@@ -1544,8 +1544,19 @@ module DayDreamInRuby
       if r2
         r0 = r2
       else
-        @index = i0
-        r0 = nil
+        if has_terminal?('<<', false, index)
+          r3 = instantiate_node(SyntaxNode,input, index...(index + 2))
+          @index += 2
+        else
+          terminal_parse_failure('<<')
+          r3 = nil
+        end
+        if r3
+          r0 = r3
+        else
+          @index = i0
+          r0 = nil
+        end
       end
     end
 

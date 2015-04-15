@@ -267,7 +267,7 @@ grammar DayDreamInRuby
   end
 
   rule operator
-    '+' / '-'
+    '+' / '-' / '<<'
   end
 
   rule sp
