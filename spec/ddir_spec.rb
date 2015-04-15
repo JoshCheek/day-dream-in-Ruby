@@ -218,22 +218,28 @@ RSpec.describe 'My language' do
 
       context 'code in the argument lists' do
         it 'identifies the locals by order of access and turns them into ordinals' do
-          pending
-          parses! '@.m (a.next, a + b)', block: {
+          parses! '@.m (a.next, 1 + b)', block: {
             params: [
               { type: :ordinal_param, name: :a },
               { type: :ordinal_param, name: :b },
             ],
             body: [
-              { type:   :send_message,
-                name:   :next,
-                target: { type: :local_variable, name: :a },
+              { type:     :send_message,
+                name:     :next,
+                receiver: { type: :local_variable, name: :a },
               },
-              { type:   :send_message,
-                name:   :next,
-                target: { type: :local_variable, name: :b },
+              { type:        :binary_expression,
+                operator:    :+,
+                left_child:  { type: :integer, value: 1 },
+                right_child: { type: :local_variable, name: :b },
               },
             ],
+          }
+        end
+
+        it 'doesn\'t get all confused by the same var being used multiple times', t2:true do
+          parses! '@.m (a+a)', block: {
+            params: [{type: :ordinal_param, name: :a }]
           }
         end
 

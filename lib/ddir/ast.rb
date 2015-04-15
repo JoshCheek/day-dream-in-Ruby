@@ -7,8 +7,9 @@ module Ddir
       attr_reader :depth
 
       def initialize
-        @depth = 0
+        @depth             = 0
         @expressions_stack = []
+        @locals_stack      = [[]]
       end
 
       def push_expressions
@@ -40,6 +41,17 @@ module Ddir
       def update_depth(new_depth)
         @depth = new_depth
         @expressions_stack.pop while depth < current_expressions.depth
+      end
+
+      def declare_local(local)
+        @locals_stack.last << local
+        local
+      end
+
+      def record_locals
+        @locals_stack.push []
+        yield
+        @locals_stack.pop
       end
     end
 

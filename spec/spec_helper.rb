@@ -43,6 +43,7 @@ module SpecHelpers
           actual.zip(expected) { |actual_at_index, expected_at_index|
             recursive_assert actual_at_index, expected_at_index
           }
+          expect(actual.count).to eq expected.count
         end
       else
         expect(actual).to eq expected

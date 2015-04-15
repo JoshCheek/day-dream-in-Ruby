@@ -1093,9 +1093,10 @@ module DayDreamInRuby
   end
 
   module Param9
-    # doesn't work yet
     def param_asts(context)
-      [expression.to_ast(context)]
+      context.record_locals { expression.to_ast context }
+             .uniq(&:name)
+             .map { |local| Ddir::Ast::OrdinalParam.new name: local.name }
     end
     def expression_asts(context)
       [expression.to_ast(context)]
@@ -1544,7 +1545,9 @@ module DayDreamInRuby
 
   module LocalVariable0
     def to_ast(context)
-      Ddir::Ast::LocalVariable.new name: text_value.intern
+      local = Ddir::Ast::LocalVariable.new name: text_value.intern
+      context.declare_local local
+      local
     end
   end
 
