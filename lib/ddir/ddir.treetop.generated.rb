@@ -792,10 +792,24 @@ module DayDreamInRuby
 
   module Block1
     def to_ast(context)
+      # identify the expressions
+      expressions = params.expressions
+      expressions << body.to_ast(context) unless body.empty?
+
+      # build the body
+      body = if expressions.empty?
+        nil
+      elsif expressions.length == 1
+        expressions.first
+      else
+        Ddir::Ast::Expressions.new(expressions: expressions, depth: context.depth.next)
+      end
+
+      # build the block
       Ddir::Ast::Block.new \
         depth:       context.depth,
         param_names: params.ordered_names,
-        body:        (body.to_ast context unless body.empty?)
+        body:        body
     end
   end
 
@@ -866,27 +880,37 @@ module DayDreamInRuby
   end
 
   module Params0
-    def local_variable
+    def param
       elements[3]
     end
   end
 
   module Params1
-    def first_name
+    def first
       elements[0]
     end
 
-    def remaining_names
+    def rest
       elements[1]
     end
+
   end
 
   module Params2
+    def all_params
+      params = []
+      params << first unless first.empty?
+      params.concat rest.elements.map(&:param)
+      params.inject(0) { |var_offset, param| param.name_anon_vars_from_offset var_offset }
+      params
+    end
+
     def ordered_names
-      names = []
-      names << first_name.text_value.intern unless first_name.empty?
-      remaining_names.elements.each { |n| names << n.local_variable.text_value.intern }
-      names
+      all_params.flat_map(&:names)
+    end
+
+    def expressions
+      all_params.flat_map(&:expressions)
     end
   end
 
@@ -902,7 +926,7 @@ module DayDreamInRuby
     end
 
     i0, s0 = index, []
-    r2 = _nt_local_variable
+    r2 = _nt_param
     if r2
       r1 = r2
     else
@@ -938,7 +962,7 @@ module DayDreamInRuby
             end
             s4 << r8
             if r8
-              r10 = _nt_local_variable
+              r10 = _nt_param
               s4 << r10
             end
           end
@@ -958,6 +982,15 @@ module DayDreamInRuby
       end
       r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
       s0 << r3
+      if r3
+        r12 = _nt_sp
+        if r12
+          r11 = r12
+        else
+          r11 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r11
+      end
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -969,6 +1002,97 @@ module DayDreamInRuby
     end
 
     node_cache[:params][start_index] = r0
+
+    r0
+  end
+
+  module Param0
+    def var
+      elements[0]
+    end
+  end
+
+  module Param1
+    def names
+      [var.text_value.intern]
+    end
+    def expressions
+      []
+    end
+    def name_anon_vars_from_offset(offset)
+      offset
+    end
+  end
+
+  module Param2
+    def var
+      elements[0]
+    end
+  end
+
+  module Param3
+    def names
+      [@anon_name]
+    end
+    def expressions
+      [ Ddir::Ast::Assignment.new(
+          target: Ddir::Ast::InstanceVariable.new(name: var.text_value.intern),
+          value:  Ddir::Ast::LocalVariable.new(name: @anon_name),
+        ),
+      ]
+    end
+    def name_anon_vars_from_offset(offset)
+      @anon_name = :"_arg#{offset}"
+      offset.next
+    end
+  end
+
+  def _nt_param
+    start_index = index
+    if node_cache[:param].has_key?(index)
+      cached = node_cache[:param][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0 = index
+    i1, s1 = index, []
+    r2 = _nt_local_variable
+    s1 << r2
+    if s1.last
+      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+      r1.extend(Param0)
+      r1.extend(Param1)
+    else
+      @index = i1
+      r1 = nil
+    end
+    if r1
+      r0 = r1
+    else
+      i3, s3 = index, []
+      r4 = _nt_instance_variable
+      s3 << r4
+      if s3.last
+        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
+        r3.extend(Param2)
+        r3.extend(Param3)
+      else
+        @index = i3
+        r3 = nil
+      end
+      if r3
+        r0 = r3
+      else
+        @index = i0
+        r0 = nil
+      end
+    end
+
+    node_cache[:param][start_index] = r0
 
     r0
   end

@@ -14,7 +14,7 @@ module SpecHelpers
   end
 
   def ast!(ast, positional_assertions)
-     positional_assertions = if positional_assertions.kind_of? Array
+    positional_assertions = if positional_assertions.kind_of? Array
       positional_assertions
     else
       [positional_assertions]

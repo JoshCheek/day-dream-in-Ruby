@@ -124,22 +124,75 @@ grammar DayDreamInRuby
   rule block
     '(' params ')' sp? body:expression?  {
       def to_ast(context)
+        # identify the expressions
+        expressions = params.expressions
+        expressions << body.to_ast(context) unless body.empty?
+
+        # build the body
+        body = if expressions.empty?
+          nil
+        elsif expressions.length == 1
+          expressions.first
+        else
+          Ddir::Ast::Expressions.new(expressions: expressions, depth: context.depth.next)
+        end
+
+        # build the block
         Ddir::Ast::Block.new \
           depth:       context.depth,
           param_names: params.ordered_names,
-          body:        (body.to_ast context unless body.empty?)
+          body:        body
       end
     }
   end
 
   rule params
-    first_name:local_variable?
-    remaining_names:(sp? ',' sp? local_variable)* {
+    first:param? rest:(sp? ',' sp? param)* sp? {
+      def all_params
+        params = []
+        params << first unless first.empty?
+        params.concat rest.elements.map(&:param)
+        params.inject(0) { |var_offset, param| param.name_anon_vars_from_offset var_offset }
+        params
+      end
+
       def ordered_names
-        names = []
-        names << first_name.text_value.intern unless first_name.empty?
-        remaining_names.elements.each { |n| names << n.local_variable.text_value.intern }
-        names
+        all_params.flat_map(&:names)
+      end
+
+      def expressions
+        all_params.flat_map(&:expressions)
+      end
+    }
+  end
+
+  rule param
+    var:local_variable {
+      def names
+        [var.text_value.intern]
+      end
+      def expressions
+        []
+      end
+      def name_anon_vars_from_offset(offset)
+        offset
+      end
+    }
+    /
+    var:instance_variable {
+      def names
+        [@anon_name]
+      end
+      def expressions
+        [ Ddir::Ast::Assignment.new(
+            target: Ddir::Ast::InstanceVariable.new(name: var.text_value.intern),
+            value:  Ddir::Ast::LocalVariable.new(name: @anon_name),
+          ),
+        ]
+      end
+      def name_anon_vars_from_offset(offset)
+        @anon_name = :"_arg#{offset}"
+        offset.next
       end
     }
   end

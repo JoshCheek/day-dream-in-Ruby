@@ -143,6 +143,23 @@ RSpec.describe 'My language' do
         parses! '@.m (a, b ,c , d) a', block: { param_names: [:a, :b, :c, :d] }
       end
 
+      specify 'arguments can assign directly to instance variables' do
+        parses! '@.m (@a, @b) 1', block: {
+          param_names: [:_arg0, :_arg1],
+          body: [
+            { type:   :assignment,
+              target: { type: :instance_variable, name: :@a },
+              value:  { type: :local_variable,    name: :_arg0 },
+            },
+            { type:   :assignment,
+              target: { type: :instance_variable, name: :@b },
+              value:  { type: :local_variable,    name: :_arg1 },
+            },
+            { type: :integer, value: 1 },
+          ]
+        }
+      end
+
       specify 'the body is anything to the right of the argument list' do
         parses! '@.m () a.b', block: {
             body: { name: :b, receiver: {name: :a} }
