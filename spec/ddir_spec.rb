@@ -118,7 +118,7 @@ RSpec.describe 'My language' do
           block:     {
             type:   :block,
             params: [{type: :ordinal_param, name: :x}],
-            body:   { type: :local_variable, name: :x },
+            body:   [{ type: :local_variable, name: :x }],
           }
         parses! '@.m a (x) x',
           receiver:  { type: :self },
@@ -129,7 +129,7 @@ RSpec.describe 'My language' do
           receiver:  { type: :self },
           block:     {
             params: [],
-            body:   nil,
+            body:   [],
           }
       end
 
@@ -163,9 +163,22 @@ RSpec.describe 'My language' do
         }
       end
 
+      specify 'keywords into instance variables work with nextline blocks' do
+        parses! "@a.m (@b)\n  1", block: {
+          params: [{ name: :_arg0 }],
+          body: [
+            { type:   :assignment,
+              target: { type: :instance_variable, name: :@b },
+              value:  { type: :local_variable, name: :_arg0 },
+            },
+            { type: :integer, value: 1 },
+          ]
+        }
+      end
+
       specify 'can use keyword arguments, both with and without defaults' do
         parses! '@.m (a, b:, c:1) 2', block: {
-          body: { type: :integer, value: 2 },
+          body: [{ type: :integer, value: 2 }],
           params: [
             { type: :ordinal_param,  name: :a },
             { type: :required_param, name: :b },
@@ -176,7 +189,7 @@ RSpec.describe 'My language' do
 
       specify 'the body is anything to the right of the argument list' do
         parses! '@.m () a.b', block: {
-            body: { name: :b, receiver: {name: :a} }
+            body: [{ name: :b, receiver: {name: :a} }]
           }
       end
 
@@ -215,7 +228,9 @@ RSpec.describe 'My language' do
           },
         },
         { type: :entry_location, body: {
-            type: :block, params: [{name: :some_arg}, {name: :other_arg}], body: {
+            type: :block,
+            params: [{name: :some_arg}, {name: :other_arg}],
+            body: [{
               type:        :binary_expression,
               left_child:  { type: :local_variable, name: :some_arg },
               operator:    :+,
@@ -230,7 +245,7 @@ RSpec.describe 'My language' do
                   arguments: [ {type: :integer, value: 123} ],
                   block:     {
                     params: [{ type: :ordinal_param, name: :x }],
-                    body:        {
+                    body:        [{
                       type:        :binary_expression,
                       operator:    :+,
                       left_child:  { type: :local_variable, name: :x },
@@ -239,12 +254,12 @@ RSpec.describe 'My language' do
                         left_child:  { type: :instance_variable, name: :@x },
                         operator:    :+,
                         right_child: { type: :local_variable, name: :other_arg},
-                      }
-                    }
-                  }
+                      },
+                    }],
+                  },
                 },
               },
-            },
+            }],
           },
         },
       ]

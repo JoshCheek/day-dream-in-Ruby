@@ -796,14 +796,8 @@ module DayDreamInRuby
       expressions = params.expressions
       expressions << body.to_ast(context) unless body.empty?
 
-      # build the body
-      body = if expressions.empty?
-        nil
-      elsif expressions.length == 1
-        expressions.first
-      else
-        Ddir::Ast::Expressions.new(expressions: expressions, depth: context.depth.next)
-      end
+      # always have a body b/c block values could add to it later
+      body = Ddir::Ast::Expressions.new(expressions: expressions, depth: context.depth.next)
 
       # build the block
       Ddir::Ast::Block.new \

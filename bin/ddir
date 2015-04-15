@@ -16,7 +16,7 @@ parse_opts = {
       @.attr_writer :z
       @.attr_accessor :z2
 
-    # -> :initialize (@x, y, z:100, z2:)
+      -> :initialize (@x, y, z:100, z2:)
         @.y <- y
         @z2 <- z2
 
