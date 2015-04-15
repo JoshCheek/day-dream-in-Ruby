@@ -2,7 +2,11 @@
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'ddir'
 
-example_input_filename = File.expand_path '../example/example_input.ddir', __dir__
-example_input          = File.read example_input_filename
+example_dir     = File.expand_path '../example', __dir__
+input_filename  = File.join(example_dir, 'example_input.ddir')
+output_filename = File.join(example_dir, 'actual_output.rb')
 
-puts Ddir.generate Ddir.parse errstream: $stderr, body: example_input
+generated = Ddir.generate Ddir.parse errstream: $stderr, body: File.read(input_filename)
+File.write output_filename, generated
+$stdout.puts generated
+system 'ruby', '-c', output_filename

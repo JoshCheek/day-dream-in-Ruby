@@ -23,10 +23,8 @@ but in a way that might make it easier to get them to realize that Ruby isn't th
 but rather the memory structures and their relationships.
 
 It's a mediocre implementation, but I learned a lot while doing it.
-Oh... currently, it doesn't actually work, either :P
 
-To see what I had in mind, check `example/example_input.ddir`
-and compare that to `example/example_output.ddir`
+To see input / output, check the `example` directory.
 
 License
 -------
