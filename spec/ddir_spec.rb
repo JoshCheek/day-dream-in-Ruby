@@ -131,7 +131,7 @@ RSpec.describe 'My language' do
         value:  { type: :integer, value: 1 }
     end
 
-    describe 'blocks' do
+    describe 'blocks', t:true do
       specify 'parens are argument lists' do
         parses! '@.m (x) x',
           type:      :send_message,
@@ -164,6 +164,12 @@ RSpec.describe 'My language' do
       specify 'arguments can be separated by commas' do
         parses! '@.m (a,b) a', block: { params: [{name: :a}, {name: :b}] }
         parses! '@.m (a, b ,c , d) a', block: { params: [{name: :a}, {name: :b}, {name: :c}, {name: :d}] }
+      end
+
+      specify 'arguments can have wonky whitespace' do
+        parses! '@.m ( a , b , c,d,e)', block: {
+          params: [{name: :a}, {name: :b}, {name: :c}, {name: :d}, {name: :e}]
+        }
       end
 
       specify 'arguments can assign directly to instance variables' do
@@ -211,13 +217,21 @@ RSpec.describe 'My language' do
       end
 
       context 'code in the argument lists' do
-        xit 'identifies the locals by order of access and turns them into ordinals' do
-          parses! '@.m (a.next)', block: {
-            params: [{ type: :ordinal_param, name: :a }],
-            body:   [
+        it 'identifies the locals by order of access and turns them into ordinals' do
+          pending
+          parses! '@.m (a.next, a + b)', block: {
+            params: [
+              { type: :ordinal_param, name: :a },
+              { type: :ordinal_param, name: :b },
+            ],
+            body: [
               { type:   :send_message,
                 name:   :next,
                 target: { type: :local_variable, name: :a },
+              },
+              { type:   :send_message,
+                name:   :next,
+                target: { type: :local_variable, name: :b },
               },
             ],
           }

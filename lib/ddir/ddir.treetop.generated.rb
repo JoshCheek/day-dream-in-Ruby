@@ -793,7 +793,7 @@ module DayDreamInRuby
   module Block1
     def to_ast(context)
       # identify the expressions
-      expressions = params.expressions
+      expressions = params.expression_asts(context)
       expressions << body.to_ast(context) unless body.empty?
 
       # always have a body b/c block values could add to it later
@@ -874,18 +874,18 @@ module DayDreamInRuby
   end
 
   module Params0
-    def param_or_code
+    def param
       elements[3]
     end
   end
 
   module Params1
     def first
-      elements[0]
+      elements[1]
     end
 
     def rest
-      elements[1]
+      elements[2]
     end
 
   end
@@ -894,17 +894,17 @@ module DayDreamInRuby
     def all_params
       params = []
       params << first unless first.empty?
-      params.concat rest.elements.map(&:param_or_code)
+      params.concat rest.elements.map(&:param)
       params.inject(0) { |var_offset, param| param.name_anon_vars_from_offset var_offset }
       params
     end
 
-    def expressions
-      all_params.flat_map(&:expressions)
+    def expression_asts(context)
+      all_params.flat_map { |param| param.expression_asts context }
     end
 
     def to_ast(context)
-      Ddir::Ast::Params.new params: all_params.map { |param| param.to_ast context }
+      Ddir::Ast::Params.new params: all_params.flat_map { |param| param.param_asts context }
     end
   end
 
@@ -920,19 +920,7 @@ module DayDreamInRuby
     end
 
     i0, s0 = index, []
-    i2 = index
-    r3 = _nt_param
-    if r3
-      r2 = r3
-    else
-      r4 = _nt_code_param
-      if r4
-        r2 = r4
-      else
-        @index = i2
-        r2 = nil
-      end
-    end
+    r2 = _nt_sp
     if r2
       r1 = r2
     else
@@ -940,74 +928,71 @@ module DayDreamInRuby
     end
     s0 << r1
     if r1
-      s5, i5 = [], index
-      loop do
-        i6, s6 = index, []
-        r8 = _nt_sp
-        if r8
-          r7 = r8
-        else
-          r7 = instantiate_node(SyntaxNode,input, index...index)
-        end
-        s6 << r7
-        if r7
-          if has_terminal?(',', false, index)
-            r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
-            @index += 1
-          else
-            terminal_parse_failure(',')
-            r9 = nil
-          end
-          s6 << r9
-          if r9
-            r11 = _nt_sp
-            if r11
-              r10 = r11
-            else
-              r10 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s6 << r10
-            if r10
-              i12 = index
-              r13 = _nt_param
-              if r13
-                r12 = r13
-              else
-                r14 = _nt_code_param
-                if r14
-                  r12 = r14
-                else
-                  @index = i12
-                  r12 = nil
-                end
-              end
-              s6 << r12
-            end
-          end
-        end
-        if s6.last
-          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-          r6.extend(Params0)
-        else
-          @index = i6
-          r6 = nil
-        end
-        if r6
-          s5 << r6
-        else
-          break
-        end
+      r4 = _nt_param
+      if r4
+        r3 = r4
+      else
+        r3 = instantiate_node(SyntaxNode,input, index...index)
       end
-      r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-      s0 << r5
-      if r5
-        r16 = _nt_sp
-        if r16
-          r15 = r16
-        else
-          r15 = instantiate_node(SyntaxNode,input, index...index)
+      s0 << r3
+      if r3
+        s5, i5 = [], index
+        loop do
+          i6, s6 = index, []
+          r8 = _nt_sp
+          if r8
+            r7 = r8
+          else
+            r7 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s6 << r7
+          if r7
+            if has_terminal?(',', false, index)
+              r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure(',')
+              r9 = nil
+            end
+            s6 << r9
+            if r9
+              r11 = _nt_sp
+              if r11
+                r10 = r11
+              else
+                r10 = instantiate_node(SyntaxNode,input, index...index)
+              end
+              s6 << r10
+              if r10
+                r12 = _nt_param
+                s6 << r12
+              end
+            end
+          end
+          if s6.last
+            r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+            r6.extend(Params0)
+          else
+            @index = i6
+            r6 = nil
+          end
+          if r6
+            s5 << r6
+          else
+            break
+          end
         end
-        s0 << r15
+        r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+        s0 << r5
+        if r5
+          r14 = _nt_sp
+          if r14
+            r13 = r14
+          else
+            r13 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s0 << r13
+        end
       end
     end
     if s0.last
@@ -1024,38 +1009,6 @@ module DayDreamInRuby
     r0
   end
 
-  module CodeParam0
-    def to_ast(context)
-    end
-
-    def expressions
-      []
-    end
-
-    def name_anon_vars_from_offset(offset)
-      offset
-    end
-  end
-
-  def _nt_code_param
-    start_index = index
-    if node_cache[:code_param].has_key?(index)
-      cached = node_cache[:code_param][index]
-      if cached
-        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
-        @index = cached.interval.end
-      end
-      return cached
-    end
-
-    r0 = _nt_expression
-    r0.extend(CodeParam0)
-
-    node_cache[:code_param][start_index] = r0
-
-    r0
-  end
-
   module Param0
     def var
       elements[0]
@@ -1067,15 +1020,16 @@ module DayDreamInRuby
   end
 
   module Param1
-    def to_ast(context)
-      if default_value.empty?
+    def param_asts(context)
+      ast = if default_value.empty?
         Ddir::Ast::RequiredParam.new name: var.text_value.intern
       else
         Ddir::Ast::DefaultParam.new name: var.text_value.intern,
                                     value: default_value.to_ast(context)
       end
+      [ast]
     end
-    def expressions
+    def expression_asts(context)
       []
     end
     def name_anon_vars_from_offset(offset)
@@ -1084,16 +1038,20 @@ module DayDreamInRuby
   end
 
   module Param2
-    def var
-      elements[0]
-    end
   end
 
   module Param3
-    def to_ast(context)
-      Ddir::Ast::OrdinalParam.new name: var.text_value.intern
+    def var
+      elements[0]
     end
-    def expressions
+
+  end
+
+  module Param4
+    def param_asts(context)
+      [Ddir::Ast::OrdinalParam.new(name: var.text_value.intern)]
+    end
+    def expression_asts(context)
       []
     end
     def name_anon_vars_from_offset(offset)
@@ -1101,19 +1059,23 @@ module DayDreamInRuby
     end
   end
 
-  module Param4
+  module Param5
+  end
+
+  module Param6
     def var
       elements[0]
     end
+
   end
 
-  module Param5
-    def to_ast(context)
-      Ddir::Ast::OrdinalParam.new name: @anon_name
+  module Param7
+    def param_asts(context)
+      [Ddir::Ast::OrdinalParam.new(name: @anon_name)]
     end
-    def expressions
+    def expression_asts(context)
       [ Ddir::Ast::Assignment.new(
-          target: Ddir::Ast::InstanceVariable.new(name: var.text_value.intern),
+          target: var.to_ast(context),
           value:  Ddir::Ast::LocalVariable.new(name: @anon_name),
         ),
       ]
@@ -1121,6 +1083,25 @@ module DayDreamInRuby
     def name_anon_vars_from_offset(offset)
       @anon_name = :"_arg#{offset}"
       offset.next
+    end
+  end
+
+  module Param8
+    def expression
+      elements[0]
+    end
+  end
+
+  module Param9
+    # doesn't work yet
+    def param_asts(context)
+      [expression.to_ast(context)]
+    end
+    def expression_asts(context)
+      [expression.to_ast(context)]
+    end
+    def name_anon_vars_from_offset(offset)
+      offset
     end
   end
 
@@ -1172,10 +1153,63 @@ module DayDreamInRuby
       i6, s6 = index, []
       r7 = _nt_local_variable
       s6 << r7
+      if r7
+        i8 = index
+        i9, s9 = index, []
+        r11 = _nt_sp
+        if r11
+          r10 = r11
+        else
+          r10 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s9 << r10
+        if r10
+          i12 = index
+          if has_terminal?(',', false, index)
+            r13 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            @index += 1
+          else
+            terminal_parse_failure(',')
+            r13 = nil
+          end
+          if r13
+            r12 = r13
+          else
+            if has_terminal?(')', false, index)
+              r14 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure(')')
+              r14 = nil
+            end
+            if r14
+              r12 = r14
+            else
+              @index = i12
+              r12 = nil
+            end
+          end
+          s9 << r12
+        end
+        if s9.last
+          r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+          r9.extend(Param2)
+        else
+          @index = i9
+          r9 = nil
+        end
+        if r9
+          @index = i8
+          r8 = instantiate_node(SyntaxNode,input, index...index)
+        else
+          r8 = nil
+        end
+        s6 << r8
+      end
       if s6.last
         r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-        r6.extend(Param2)
         r6.extend(Param3)
+        r6.extend(Param4)
       else
         @index = i6
         r6 = nil
@@ -1183,22 +1217,90 @@ module DayDreamInRuby
       if r6
         r0 = r6
       else
-        i8, s8 = index, []
-        r9 = _nt_instance_variable
-        s8 << r9
-        if s8.last
-          r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
-          r8.extend(Param4)
-          r8.extend(Param5)
-        else
-          @index = i8
-          r8 = nil
+        i15, s15 = index, []
+        r16 = _nt_instance_variable
+        s15 << r16
+        if r16
+          i17 = index
+          i18, s18 = index, []
+          r20 = _nt_sp
+          if r20
+            r19 = r20
+          else
+            r19 = instantiate_node(SyntaxNode,input, index...index)
+          end
+          s18 << r19
+          if r19
+            i21 = index
+            if has_terminal?(',', false, index)
+              r22 = instantiate_node(SyntaxNode,input, index...(index + 1))
+              @index += 1
+            else
+              terminal_parse_failure(',')
+              r22 = nil
+            end
+            if r22
+              r21 = r22
+            else
+              if has_terminal?(')', false, index)
+                r23 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
+              else
+                terminal_parse_failure(')')
+                r23 = nil
+              end
+              if r23
+                r21 = r23
+              else
+                @index = i21
+                r21 = nil
+              end
+            end
+            s18 << r21
+          end
+          if s18.last
+            r18 = instantiate_node(SyntaxNode,input, i18...index, s18)
+            r18.extend(Param5)
+          else
+            @index = i18
+            r18 = nil
+          end
+          if r18
+            @index = i17
+            r17 = instantiate_node(SyntaxNode,input, index...index)
+          else
+            r17 = nil
+          end
+          s15 << r17
         end
-        if r8
-          r0 = r8
+        if s15.last
+          r15 = instantiate_node(SyntaxNode,input, i15...index, s15)
+          r15.extend(Param6)
+          r15.extend(Param7)
         else
-          @index = i0
-          r0 = nil
+          @index = i15
+          r15 = nil
+        end
+        if r15
+          r0 = r15
+        else
+          i24, s24 = index, []
+          r25 = _nt_expression
+          s24 << r25
+          if s24.last
+            r24 = instantiate_node(SyntaxNode,input, i24...index, s24)
+            r24.extend(Param8)
+            r24.extend(Param9)
+          else
+            @index = i24
+            r24 = nil
+          end
+          if r24
+            r0 = r24
+          else
+            @index = i0
+            r0 = nil
+          end
         end
       end
     end

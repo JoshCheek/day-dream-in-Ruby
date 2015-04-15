@@ -125,7 +125,7 @@ grammar DayDreamInRuby
     '(' params ')' sp? body:expression?  {
       def to_ast(context)
         # identify the expressions
-        expressions = params.expressions
+        expressions = params.expression_asts(context)
         expressions << body.to_ast(context) unless body.empty?
 
         # always have a body b/c block values could add to it later
@@ -141,53 +141,40 @@ grammar DayDreamInRuby
   end
 
   rule params
-    first:(param / code_param)?
-    rest:(sp? ',' sp? param_or_code:(param / code_param))*
+    sp?
+    first:param?
+    rest:(sp? ',' sp? param)*
     sp? {
       def all_params
         params = []
         params << first unless first.empty?
-        params.concat rest.elements.map(&:param_or_code)
+        params.concat rest.elements.map(&:param)
         params.inject(0) { |var_offset, param| param.name_anon_vars_from_offset var_offset }
         params
       end
 
-      def expressions
-        all_params.flat_map(&:expressions)
+      def expression_asts(context)
+        all_params.flat_map { |param| param.expression_asts context }
       end
 
       def to_ast(context)
-        Ddir::Ast::Params.new params: all_params.map { |param| param.to_ast context }
-      end
-    }
-  end
-
-  rule code_param
-    expression {
-      def to_ast(context)
-      end
-
-      def expressions
-        []
-      end
-
-      def name_anon_vars_from_offset(offset)
-        offset
+        Ddir::Ast::Params.new params: all_params.flat_map { |param| param.param_asts context }
       end
     }
   end
 
   rule param
     var:local_variable ':' default_value:expression? {
-      def to_ast(context)
-        if default_value.empty?
+      def param_asts(context)
+        ast = if default_value.empty?
           Ddir::Ast::RequiredParam.new name: var.text_value.intern
         else
           Ddir::Ast::DefaultParam.new name: var.text_value.intern,
                                       value: default_value.to_ast(context)
         end
+        [ast]
       end
-      def expressions
+      def expression_asts(context)
         []
       end
       def name_anon_vars_from_offset(offset)
@@ -195,11 +182,13 @@ grammar DayDreamInRuby
       end
     }
     /
-    var:local_variable {
-      def to_ast(context)
-        Ddir::Ast::OrdinalParam.new name: var.text_value.intern
+    var:local_variable
+    &(sp? (',' / ')')) # only if it is the only thing at this spot
+    {
+      def param_asts(context)
+        [Ddir::Ast::OrdinalParam.new(name: var.text_value.intern)]
       end
-      def expressions
+      def expression_asts(context)
         []
       end
       def name_anon_vars_from_offset(offset)
@@ -207,13 +196,15 @@ grammar DayDreamInRuby
       end
     }
     /
-    var:instance_variable {
-      def to_ast(context)
-        Ddir::Ast::OrdinalParam.new name: @anon_name
+    var:instance_variable
+    &(sp? (',' / ')')) # only if it is the only thing at this spot
+    {
+      def param_asts(context)
+        [Ddir::Ast::OrdinalParam.new(name: @anon_name)]
       end
-      def expressions
+      def expression_asts(context)
         [ Ddir::Ast::Assignment.new(
-            target: Ddir::Ast::InstanceVariable.new(name: var.text_value.intern),
+            target: var.to_ast(context),
             value:  Ddir::Ast::LocalVariable.new(name: @anon_name),
           ),
         ]
@@ -221,6 +212,19 @@ grammar DayDreamInRuby
       def name_anon_vars_from_offset(offset)
         @anon_name = :"_arg#{offset}"
         offset.next
+      end
+    }
+    /
+     expression:expression {
+      # doesn't work yet
+      def param_asts(context)
+        [expression.to_ast(context)]
+      end
+      def expression_asts(context)
+        [expression.to_ast(context)]
+      end
+      def name_anon_vars_from_offset(offset)
+        offset
       end
     }
   end
