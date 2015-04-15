@@ -92,9 +92,11 @@ module Ddir
       when :local_variable, :instance_variable
         ast.name.to_s
 
-      when :params
-        ast.map { |param| generate param, entry, indentation }
-           .join(', ')
+      when :params, :destructured_param
+        params = ast.map { |param| generate param, entry, indentation }
+                    .join(', ')
+        params = "(#{params})" if ast.type == :destructured_param
+        params
 
       when :default_param
         "#{ast.name}:#{generate ast.value, entry, indentation}"

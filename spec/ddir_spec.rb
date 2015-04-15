@@ -280,6 +280,20 @@ RSpec.describe 'Day Dream In Ruby' do
             ],
           }
         end
+
+        it 'destructures args' do
+          parses! '@.m ((a,b),c)', block: {
+            params: [
+              { type:   :destructured_param,
+                params: [
+                  { type: :ordinal_param, name: :a },
+                  { type: :ordinal_param, name: :b },
+                ],
+              },
+              { type: :ordinal_param, name: :c },
+            ],
+          }
+        end
       end
 
       specify 'the body is anything to the right of the argument list' do
@@ -621,6 +635,10 @@ RSpec.describe 'Day Dream In Ruby' do
 
         define(:nums) { [[1,2], [10,20], [12,12]] }
         expect(eval '@.nums.map (first + second)').to eq [3, 30, 24]
+      end
+
+      it 'destructures arguments' do
+        expect(call_block '((a,b),c) a+b+c', [[1,2],3]).to eq 6
       end
     end
   end

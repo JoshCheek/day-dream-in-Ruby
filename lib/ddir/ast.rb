@@ -268,6 +268,8 @@ module Ddir
       end
     end
 
+    class DestructuredParam < Params
+    end
 
     class Param < Ast
       attr_accessor :name

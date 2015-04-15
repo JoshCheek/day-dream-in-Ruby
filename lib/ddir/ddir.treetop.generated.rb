@@ -782,11 +782,11 @@ module DayDreamInRuby
 
   module Block0
     def params
-      elements[1]
+      elements[0]
     end
 
     def body
-      elements[4]
+      elements[2]
     end
   end
 
@@ -819,44 +819,24 @@ module DayDreamInRuby
     end
 
     i0, s0 = index, []
-    if has_terminal?('(', false, index)
-      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
-      @index += 1
-    else
-      terminal_parse_failure('(')
-      r1 = nil
-    end
+    r1 = _nt_params
     s0 << r1
     if r1
-      r2 = _nt_params
+      r3 = _nt_sp
+      if r3
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
       s0 << r2
       if r2
-        if has_terminal?(')', false, index)
-          r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
-          @index += 1
+        r5 = _nt_expression
+        if r5
+          r4 = r5
         else
-          terminal_parse_failure(')')
-          r3 = nil
+          r4 = instantiate_node(SyntaxNode,input, index...index)
         end
-        s0 << r3
-        if r3
-          r5 = _nt_sp
-          if r5
-            r4 = r5
-          else
-            r4 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s0 << r4
-          if r4
-            r7 = _nt_expression
-            if r7
-              r6 = r7
-            else
-              r6 = instantiate_node(SyntaxNode,input, index...index)
-            end
-            s0 << r6
-          end
-        end
+        s0 << r4
       end
     end
     if s0.last
@@ -881,11 +861,11 @@ module DayDreamInRuby
 
   module Params1
     def first
-      elements[1]
+      elements[2]
     end
 
     def rest
-      elements[2]
+      elements[3]
     end
 
   end
@@ -920,78 +900,98 @@ module DayDreamInRuby
     end
 
     i0, s0 = index, []
-    r2 = _nt_sp
-    if r2
-      r1 = r2
+    if has_terminal?('(', false, index)
+      r1 = instantiate_node(SyntaxNode,input, index...(index + 1))
+      @index += 1
     else
-      r1 = instantiate_node(SyntaxNode,input, index...index)
+      terminal_parse_failure('(')
+      r1 = nil
     end
     s0 << r1
     if r1
-      r4 = _nt_param
-      if r4
-        r3 = r4
-      else
-        r3 = instantiate_node(SyntaxNode,input, index...index)
-      end
-      s0 << r3
+      r3 = _nt_sp
       if r3
-        s5, i5 = [], index
-        loop do
-          i6, s6 = index, []
-          r8 = _nt_sp
-          if r8
-            r7 = r8
-          else
-            r7 = instantiate_node(SyntaxNode,input, index...index)
-          end
-          s6 << r7
-          if r7
-            if has_terminal?(',', false, index)
-              r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
-              @index += 1
-            else
-              terminal_parse_failure(',')
-              r9 = nil
-            end
-            s6 << r9
-            if r9
-              r11 = _nt_sp
-              if r11
-                r10 = r11
-              else
-                r10 = instantiate_node(SyntaxNode,input, index...index)
-              end
-              s6 << r10
-              if r10
-                r12 = _nt_param
-                s6 << r12
-              end
-            end
-          end
-          if s6.last
-            r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
-            r6.extend(Params0)
-          else
-            @index = i6
-            r6 = nil
-          end
-          if r6
-            s5 << r6
-          else
-            break
-          end
-        end
-        r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
-        s0 << r5
+        r2 = r3
+      else
+        r2 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r2
+      if r2
+        r5 = _nt_param
         if r5
-          r14 = _nt_sp
-          if r14
-            r13 = r14
-          else
-            r13 = instantiate_node(SyntaxNode,input, index...index)
+          r4 = r5
+        else
+          r4 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s0 << r4
+        if r4
+          s6, i6 = [], index
+          loop do
+            i7, s7 = index, []
+            r9 = _nt_sp
+            if r9
+              r8 = r9
+            else
+              r8 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s7 << r8
+            if r8
+              if has_terminal?(',', false, index)
+                r10 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
+              else
+                terminal_parse_failure(',')
+                r10 = nil
+              end
+              s7 << r10
+              if r10
+                r12 = _nt_sp
+                if r12
+                  r11 = r12
+                else
+                  r11 = instantiate_node(SyntaxNode,input, index...index)
+                end
+                s7 << r11
+                if r11
+                  r13 = _nt_param
+                  s7 << r13
+                end
+              end
+            end
+            if s7.last
+              r7 = instantiate_node(SyntaxNode,input, i7...index, s7)
+              r7.extend(Params0)
+            else
+              @index = i7
+              r7 = nil
+            end
+            if r7
+              s6 << r7
+            else
+              break
+            end
           end
-          s0 << r13
+          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+          s0 << r6
+          if r6
+            r15 = _nt_sp
+            if r15
+              r14 = r15
+            else
+              r14 = instantiate_node(SyntaxNode,input, index...index)
+            end
+            s0 << r14
+            if r14
+              if has_terminal?(')', false, index)
+                r16 = instantiate_node(SyntaxNode,input, index...(index + 1))
+                @index += 1
+              else
+                terminal_parse_failure(')')
+                r16 = nil
+              end
+              s0 << r16
+            end
+          end
         end
       end
     end
@@ -1087,12 +1087,30 @@ module DayDreamInRuby
   end
 
   module Param8
-    def expression
+    def destructured
       elements[0]
     end
   end
 
   module Param9
+    def param_asts(context)
+      [Ddir::Ast::DestructuredParam.new(params: destructured.to_ast(context).params)]
+    end
+    def expression_asts(context)
+      destructured.expression_asts(context)
+    end
+    def name_anon_vars_from_offset(offset)
+      offset
+    end
+  end
+
+  module Param10
+    def expression
+      elements[0]
+    end
+  end
+
+  module Param11
     def param_asts(context)
       context.record_locals { expression.to_ast context }
              .uniq(&:name)
@@ -1286,7 +1304,7 @@ module DayDreamInRuby
           r0 = r15
         else
           i24, s24 = index, []
-          r25 = _nt_expression
+          r25 = _nt_params
           s24 << r25
           if s24.last
             r24 = instantiate_node(SyntaxNode,input, i24...index, s24)
@@ -1299,8 +1317,23 @@ module DayDreamInRuby
           if r24
             r0 = r24
           else
-            @index = i0
-            r0 = nil
+            i26, s26 = index, []
+            r27 = _nt_expression
+            s26 << r27
+            if s26.last
+              r26 = instantiate_node(SyntaxNode,input, i26...index, s26)
+              r26.extend(Param10)
+              r26.extend(Param11)
+            else
+              @index = i26
+              r26 = nil
+            end
+            if r26
+              r0 = r26
+            else
+              @index = i0
+              r0 = nil
+            end
           end
         end
       end
