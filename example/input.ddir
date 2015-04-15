@@ -1,4 +1,3 @@
-# vim: set filetype=coffee:
 -> (x) x + x
 
 -> :A
