@@ -874,7 +874,7 @@ module DayDreamInRuby
   end
 
   module Params0
-    def param
+    def param_or_code
       elements[3]
     end
   end
@@ -894,7 +894,7 @@ module DayDreamInRuby
     def all_params
       params = []
       params << first unless first.empty?
-      params.concat rest.elements.map(&:param)
+      params.concat rest.elements.map(&:param_or_code)
       params.inject(0) { |var_offset, param| param.name_anon_vars_from_offset var_offset }
       params
     end
@@ -920,7 +920,19 @@ module DayDreamInRuby
     end
 
     i0, s0 = index, []
-    r2 = _nt_param
+    i2 = index
+    r3 = _nt_param
+    if r3
+      r2 = r3
+    else
+      r4 = _nt_code_param
+      if r4
+        r2 = r4
+      else
+        @index = i2
+        r2 = nil
+      end
+    end
     if r2
       r1 = r2
     else
@@ -928,62 +940,74 @@ module DayDreamInRuby
     end
     s0 << r1
     if r1
-      s3, i3 = [], index
+      s5, i5 = [], index
       loop do
-        i4, s4 = index, []
-        r6 = _nt_sp
-        if r6
-          r5 = r6
+        i6, s6 = index, []
+        r8 = _nt_sp
+        if r8
+          r7 = r8
         else
-          r5 = instantiate_node(SyntaxNode,input, index...index)
+          r7 = instantiate_node(SyntaxNode,input, index...index)
         end
-        s4 << r5
-        if r5
+        s6 << r7
+        if r7
           if has_terminal?(',', false, index)
-            r7 = instantiate_node(SyntaxNode,input, index...(index + 1))
+            r9 = instantiate_node(SyntaxNode,input, index...(index + 1))
             @index += 1
           else
             terminal_parse_failure(',')
-            r7 = nil
+            r9 = nil
           end
-          s4 << r7
-          if r7
-            r9 = _nt_sp
-            if r9
-              r8 = r9
+          s6 << r9
+          if r9
+            r11 = _nt_sp
+            if r11
+              r10 = r11
             else
-              r8 = instantiate_node(SyntaxNode,input, index...index)
+              r10 = instantiate_node(SyntaxNode,input, index...index)
             end
-            s4 << r8
-            if r8
-              r10 = _nt_param
-              s4 << r10
+            s6 << r10
+            if r10
+              i12 = index
+              r13 = _nt_param
+              if r13
+                r12 = r13
+              else
+                r14 = _nt_code_param
+                if r14
+                  r12 = r14
+                else
+                  @index = i12
+                  r12 = nil
+                end
+              end
+              s6 << r12
             end
           end
         end
-        if s4.last
-          r4 = instantiate_node(SyntaxNode,input, i4...index, s4)
-          r4.extend(Params0)
+        if s6.last
+          r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+          r6.extend(Params0)
         else
-          @index = i4
-          r4 = nil
+          @index = i6
+          r6 = nil
         end
-        if r4
-          s3 << r4
+        if r6
+          s5 << r6
         else
           break
         end
       end
-      r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
-      s0 << r3
-      if r3
-        r12 = _nt_sp
-        if r12
-          r11 = r12
+      r5 = instantiate_node(SyntaxNode,input, i5...index, s5)
+      s0 << r5
+      if r5
+        r16 = _nt_sp
+        if r16
+          r15 = r16
         else
-          r11 = instantiate_node(SyntaxNode,input, index...index)
+          r15 = instantiate_node(SyntaxNode,input, index...index)
         end
-        s0 << r11
+        s0 << r15
       end
     end
     if s0.last
@@ -996,6 +1020,38 @@ module DayDreamInRuby
     end
 
     node_cache[:params][start_index] = r0
+
+    r0
+  end
+
+  module CodeParam0
+    def to_ast(context)
+    end
+
+    def expressions
+      []
+    end
+
+    def name_anon_vars_from_offset(offset)
+      offset
+    end
+  end
+
+  def _nt_code_param
+    start_index = index
+    if node_cache[:code_param].has_key?(index)
+      cached = node_cache[:code_param][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    r0 = _nt_expression
+    r0.extend(CodeParam0)
+
+    node_cache[:code_param][start_index] = r0
 
     r0
   end

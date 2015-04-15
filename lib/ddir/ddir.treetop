@@ -141,11 +141,13 @@ grammar DayDreamInRuby
   end
 
   rule params
-    first:param? rest:(sp? ',' sp? param)* sp? {
+    first:(param / code_param)?
+    rest:(sp? ',' sp? param_or_code:(param / code_param))*
+    sp? {
       def all_params
         params = []
         params << first unless first.empty?
-        params.concat rest.elements.map(&:param)
+        params.concat rest.elements.map(&:param_or_code)
         params.inject(0) { |var_offset, param| param.name_anon_vars_from_offset var_offset }
         params
       end
@@ -156,6 +158,21 @@ grammar DayDreamInRuby
 
       def to_ast(context)
         Ddir::Ast::Params.new params: all_params.map { |param| param.to_ast context }
+      end
+    }
+  end
+
+  rule code_param
+    expression {
+      def to_ast(context)
+      end
+
+      def expressions
+        []
+      end
+
+      def name_anon_vars_from_offset(offset)
+        offset
       end
     }
   end

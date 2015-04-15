@@ -186,7 +186,7 @@ RSpec.describe 'My language' do
         }
       end
 
-      specify 'keywords into instance variables work with nextline blocks' do
+      specify 'assignments into instance variables work with nextline blocks' do
         parses! "@a.m (@b)\n  1", block: {
           params: [{ name: :_arg0 }],
           body: [
@@ -208,6 +208,24 @@ RSpec.describe 'My language' do
             { type: :default_param,  name: :c, value: {type: :integer, value: 1 }},
           ],
         }
+      end
+
+      context 'code in the argument lists' do
+        xit 'identifies the locals by order of access and turns them into ordinals' do
+          parses! '@.m (a.next)', block: {
+            params: [{ type: :ordinal_param, name: :a }],
+            body:   [
+              { type:   :send_message,
+                name:   :next,
+                target: { type: :local_variable, name: :a },
+              },
+            ],
+          }
+        end
+
+        it 'ignores locals in the surrounding environment'
+        it 'moves the code down into the body'
+        it 'accepts mixes of code args and other style args'
       end
 
       specify 'the body is anything to the right of the argument list' do
@@ -339,6 +357,20 @@ RSpec.describe 'My language' do
   end
 
   context 'Generated code' do
+    def define(name, private:false, &block)
+      singleton_class.class_eval do
+        define_method name, &block
+        private(name) if private
+      end
+      methods = private ? private_methods : public_methods
+      expect(methods).to include name
+    end
+
+    def call_block(code, *args_to_pass)
+      define(:m) { |&block| block.call *args_to_pass }
+      eval "@.m #{code}"
+    end
+
     context 'literals' do
       example '123 is an integer' do
         expect(eval '123').to eq 123
@@ -436,21 +468,7 @@ RSpec.describe 'My language' do
       end
     end
 
-    def define(name, private:false, &block)
-      singleton_class.class_eval do
-        define_method name, &block
-        private(name) if private
-      end
-      methods = private ? private_methods : public_methods
-      expect(methods).to include name
-    end
-
     context 'blocks' do
-      def call_block(code, *args_to_pass)
-        define(:m) { |&block| block.call *args_to_pass }
-        eval "@.m #{code}"
-      end
-
       are 'indicated by an arg list and inline body' do
         expect(call_block '(x) x + x', 1).to eq 2
       end
@@ -518,8 +536,30 @@ RSpec.describe 'My language' do
     end
 
     context 'argument lists' do
-      are 'indicated by parentheses'
-      #...
+      are 'indicated by parentheses' do
+        call_block '(a) @returned <- a', :zomg
+        expect(@returned).to eq :zomg
+      end
+
+      it 'can directly set ivars' do
+        call_block '(@received)', :zomg
+        expect(@received).to eq :zomg
+
+        returned = call_block '(@a) 1 + @a', 2
+        expect(@a).to eq 2
+        expect(returned).to eq 3
+      end
+
+      it 'supports keyword defaults and keyword required' do
+        returned = call_block '(a:, b:2) a + b', a: 100, b: 200
+        expect(returned).to eq 300
+
+        returned = call_block '(a:, b:2) a + b', a: 100
+        expect(returned).to eq 102
+
+        expect { call_block '(a:, b:2) a + b' }
+          .to raise_error ArgumentError, 'missing keyword: a'
+      end
     end
   end
 end
