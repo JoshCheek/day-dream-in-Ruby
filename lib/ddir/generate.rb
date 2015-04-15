@@ -23,9 +23,9 @@ module Ddir
       when :body
         body = generate ast.expressions, entry, indent(indentation)
         if wrap
-          "Module.new {\n#{indent indentation}#{
+          "Module.new do\n#{indent indentation}#{
             body
-          }}\n#{indentation}"
+          }\nend\n#{indentation}"
         else
           body
         end
@@ -40,8 +40,8 @@ module Ddir
           body = generate ast.body, :method, indentation
           "define_singleton_method(#{ast.name.inspect})#{body}"
         elsif entry == :toplevel && ast.via_class?
-          body = generate ast.body, :class, indent(indentation)
-          "const_set(#{ast.name.inspect}, Class.new #{body})"
+          body = generate ast.body, :class, indentation
+          "const_set #{ast.name.inspect}, Class.new #{body}"
         elsif entry == :class && ast.via_method?
           body = generate ast.body, :method, indentation
           "define_method(#{ast.name.inspect})#{body}"
@@ -50,7 +50,7 @@ module Ddir
         end
 
       when :binary_expression
-        "((#{generate ast.left_child, entry, indentation}) #{ast.operator} (#{generate ast.right_child, entry, indentation}))"
+        "#{generate ast.left_child, entry, indentation} #{ast.operator} #{generate ast.right_child, entry, indentation}"
 
       when :send_message
         receiver = if ast.receiver.type == :self && ast.name.to_s.end_with?('=')
@@ -58,20 +58,25 @@ module Ddir
         elsif ast.receiver.type == :self
           ""
         else
-          "(#{generate ast.receiver, entry, indentation})."
+          "#{generate ast.receiver, entry, indentation}."
         end
-        "#{receiver}#{ast.name}(#{
-            ast.arguments.map { |arg|
-              generate arg, entry, indentation
-            }.join(', ')
-            })#{generate ast.block, entry, indentation}"
+        args = if ast.arguments.empty?
+          ''
+        else
+          "(#{ast.arguments.map { |arg|
+                generate arg, entry, indentation
+              }.join(', ')})"
+        end
+        "#{receiver}#{ast.name}#{args}#{generate ast.block, entry, indentation}"
 
       when :block
         params = ""
         params = "|#{generate ast.params, entry, indentation}|" if ast.params?
-        " { #{params}\n#{indent(indentation)}#{
-          generate ast.body, entry, indent(indentation)}\n#{indentation
-        }}\n#{indentation}"
+        " { #{params}\n#{
+          indent indentation}#{
+          generate ast.body, entry, indent(indentation)}\n#{
+          indentation}}\n#{
+        indentation}"
 
       when :assignment
         "#{generate ast.target, entry, indentation} = #{
