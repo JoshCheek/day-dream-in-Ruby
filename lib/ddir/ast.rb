@@ -56,42 +56,13 @@ module Ddir
     end
 
 
-    include Enumerable
-
     def initialize(attrs={})
       return if attrs.empty?
       raise "Additional attrs! #{attrs.inspect} for #{self.class.inspect}"
     end
 
-    def children
-      raise NotImplementedError, 'Override #children in subclasses'
-    end
-
     def type
       @type ||= classname.gsub(/([a-z])([A-Z])/, '\1_\2').downcase.intern
-    end
-
-    def each(&block)
-      children.each(&block)
-    end
-
-    def inspect
-      pretty_inspect
-    end
-
-    def pretty_print(pp)
-      pp.text "#<#{classname}"
-      pp.group 2 do
-        pp.breakable '' # place inside so that if we break, we are indented
-        last_child = children.last
-        children.each do |child|
-          # it can break with a comma/newline, after any child except after the last
-          pp.pp child
-          pp.comma_breakable unless child == last_child
-        end
-      end
-      pp.breakable # can break after last child
-      pp.text '>'
     end
 
     def classname
@@ -118,6 +89,8 @@ module Ddir
 
 
     class Expressions < Ast
+      include Enumerable
+
       attr_accessor :expressions, :depth
 
       def initialize(depth:, expressions:[], **rest)
@@ -126,21 +99,23 @@ module Ddir
         super rest
       end
 
+      alias children expressions
+
+      def each(&block)
+        expressions.each(&block)
+      end
+
       def length
         expressions.length
       end
 
-      def children
-        expressions
-      end
-
       def add_child(child)
-        children << child
+        expressions << child
         child
       end
 
       def modify_child(&block)
-        children.push block.call children.pop
+        expressions.push block.call expressions.pop
       end
 
       def child_at(depth)
@@ -157,9 +132,6 @@ module Ddir
         self.body  = body
         self.depth = depth
         super rest
-      end
-      def children
-        [name, body]
       end
       def via_class?
         !!(name =~ /^[A-Z]/)
@@ -182,10 +154,6 @@ module Ddir
         self.right_child = right_child
         super rest
       end
-
-      def children
-        [left_child, operator, right_child]
-      end
     end
 
 
@@ -195,9 +163,6 @@ module Ddir
         self.target = target
         self.value  = value
         super rest
-      end
-      def children
-        [target, value]
       end
     end
 
@@ -212,10 +177,6 @@ module Ddir
         self.block     = block
         self.depth     = depth
         super rest
-      end
-
-      def children
-        [receiver, '.', name, arguments, block]
       end
 
       def child_at(depth)
@@ -238,10 +199,6 @@ module Ddir
         params.any?
       end
 
-      def children
-        [body]
-      end
-
       def child_at(depth)
         self.body ||= Expressions.new depth: self.depth+1
         body.child_at(depth)
@@ -250,14 +207,16 @@ module Ddir
 
 
     class Params < Ast
+      include Enumerable
+
       attr_accessor :params
       def initialize(params:, **rest)
         self.params = params
         super rest
       end
 
-      def children
-        params
+      def each(&block)
+        params.each(&block)
       end
     end
 
@@ -269,9 +228,6 @@ module Ddir
       def initialize(name:, **rest)
         self.name = name
         super rest
-      end
-      def children
-        []
       end
     end
 
@@ -296,9 +252,6 @@ module Ddir
         self.value = value
         super rest
       end
-      def children
-        [value]
-      end
     end
 
 
@@ -315,9 +268,6 @@ module Ddir
 
 
     class Self < Ast
-      def children
-        []
-      end
     end
 
 
@@ -327,14 +277,6 @@ module Ddir
       def initialize(name:, **rest)
         self.name = name
         super rest
-      end
-
-      def children
-        []
-      end
-
-      def pretty_print(pp)
-        pp.text "#<#{classname} #{name.inspect}>"
       end
     end
 
