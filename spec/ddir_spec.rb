@@ -55,8 +55,10 @@ RSpec.describe 'My language' do
     end
 
     context 'inline operators' do
-      it('supports +')  { parses! '1+1',  type: :binary_expression, operator: :+  }
-      it('supports -')  { parses! '1-1',  type: :binary_expression, operator: :-  }
+      it('supports +' ) { parses! '1+1',  type: :binary_expression, operator: :+  }
+      it('supports -' ) { parses! '1-1',  type: :binary_expression, operator: :-  }
+      it('supports *' ) { parses! '1*1',  type: :binary_expression, operator: :*  }
+      it('supports /' ) { parses! '1/1',  type: :binary_expression, operator: :/  }
       it('supports <<') { parses! '1<<1', type: :binary_expression, operator: :<< }
       it 'records the left and right sides as children' do
         parses! '1+2', left_child:  { type: :integer, value: 1 },

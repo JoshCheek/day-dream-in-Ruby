@@ -37,8 +37,8 @@ parse_opts = {
               .upcase
               .chars.join '.'
           .map (c.downcase)
-    #     .map (c*2)
-    #     .map.with_index (c.upcase, i*2)
+          .map (c*2)
+          .map.with_index (c.upcase, i*2)
     #     .each.with_object "" ((char.downcase, index/2), str)
     #       if index.even?
     #         str << "\#{index}: \#{char}"
