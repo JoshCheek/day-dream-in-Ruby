@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-RSpec.describe 'My language' do
+RSpec.describe 'Day Dream In Ruby' do
   class << self
     alias are it
   end
@@ -133,7 +133,7 @@ RSpec.describe 'My language' do
         value:  { type: :integer, value: 1 }
     end
 
-    describe 'blocks', t:true do
+    describe 'blocks' do
       specify 'parens are argument lists' do
         parses! '@.m (x) x',
           type:      :send_message,
@@ -224,7 +224,19 @@ RSpec.describe 'My language' do
             params: [
               { type: :ordinal_param, name: :a },
               { type: :ordinal_param, name: :b },
-            ],
+            ]
+          }
+        end
+
+        it 'doesn\'t get all confused by the same var being used multiple times' do
+          parses! '@.m (a+a)', block: { params: [{type: :ordinal_param, name: :a }] }
+        end
+
+        it 'ignores locals in the surrounding environment'
+        # meh, I don't feel like recording lexical scoping just for a thought experiment
+
+        it 'moves the code down into the body' do
+          parses! '@.m (a.next, 1 + b)', block: {
             body: [
               { type:     :send_message,
                 name:     :next,
@@ -239,15 +251,35 @@ RSpec.describe 'My language' do
           }
         end
 
-        it 'doesn\'t get all confused by the same var being used multiple times', t2:true do
-          parses! '@.m (a+a)', block: {
-            params: [{type: :ordinal_param, name: :a }]
+        it 'extracts multiple locals into args based on the order they are used' do
+          parses! '@.m (b + a)', block: {
+            params: [
+              { type: :ordinal_param, name: :b },
+              { type: :ordinal_param, name: :a },
+            ],
+            body: [
+              { type:        :binary_expression,
+                operator:    :+,
+                left_child:  { type: :local_variable, name: :b },
+                right_child: { type: :local_variable, name: :a },
+              },
+            ],
           }
         end
 
-        it 'ignores locals in the surrounding environment'
-        it 'moves the code down into the body'
-        it 'accepts mixes of code args and other style args'
+        it 'accepts mixes of code args and other style args' do
+          parses! '@.m (@a, b, c.upcase, d + e, f:1, g:)', block: {
+            params: [
+              { type: :ordinal_param,  name: :_arg0 },
+              { type: :ordinal_param,  name: :b },
+              { type: :ordinal_param,  name: :c },
+              { type: :ordinal_param,  name: :d },
+              { type: :ordinal_param,  name: :e },
+              { type: :default_param,  name: :f, value: { type: :integer, value: 1 } },
+              { type: :required_param, name: :g },
+            ],
+          }
+        end
       end
 
       specify 'the body is anything to the right of the argument list' do
@@ -581,6 +613,14 @@ RSpec.describe 'My language' do
 
         expect { call_block '(a:, b:2) a + b' }
           .to raise_error ArgumentError, 'missing keyword: a'
+      end
+
+      it 'supports code in argument lists, extracting the various locals' do
+        define(:chars) { ['a', 'b', 'c'] }
+        expect(eval '@.chars.map (c.upcase)').to eq ['A', 'B', 'C']
+
+        define(:nums) { [[1,2], [10,20], [12,12]] }
+        expect(eval '@.nums.map (first + second)').to eq [3, 30, 24]
       end
     end
   end
