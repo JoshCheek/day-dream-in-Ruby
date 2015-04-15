@@ -68,7 +68,7 @@ module Ddir
 
       when :block
         params = ""
-        params = "|#{ast.param_names.join ', '}|" if ast.params?
+        params = "|#{generate ast.params, entry, indentation}|" if ast.params?
         " { #{params}\n#{indent(indentation)}#{
           generate ast.body, entry, indent(indentation)}\n#{indentation
         }}\n#{indentation}"
@@ -91,6 +91,19 @@ module Ddir
 
       when :local_variable, :instance_variable
         ast.name.to_s
+
+      when :params
+        ast.map { |param| generate param, entry, indentation }
+           .join(', ')
+
+      when :default_param
+        "#{ast.name}:#{generate ast.value, entry, indentation}"
+
+      when :ordinal_param
+        ast.name.to_s
+
+      when :required_param
+        "#{ast.name}:"
 
       when :none
         ''

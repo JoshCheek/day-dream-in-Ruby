@@ -48,7 +48,7 @@ module Ddir
 
     def initialize(attrs={})
       return if attrs.empty?
-      raise "Additional attrs! #{attrs.inspect}"
+      raise "Additional attrs! #{attrs.inspect} for #{self.class.inspect}"
     end
 
     def children
@@ -221,16 +221,16 @@ module Ddir
 
 
     class Block < Ast
-      attr_accessor :param_names, :body, :depth
-      def initialize(param_names:[], body:nil, depth:, **rest)
-        self.param_names = param_names
-        self.body        = body
-        self.depth       = depth
+      attr_accessor :params, :body, :depth
+      def initialize(params:[], body:nil, depth:, **rest)
+        self.params = params
+        self.body   = body
+        self.depth  = depth
         super rest
       end
 
       def params?
-        param_names.any?
+        params.any?
       end
 
       def children
@@ -241,6 +241,45 @@ module Ddir
         self.body ||= Expressions.new depth: self.depth+1
         body.child_at(depth)
       end
+    end
+
+
+    class Params < Ast
+      attr_accessor :params
+      def initialize(params:, **rest)
+        self.params = params
+        super rest
+      end
+
+      def children
+        params
+      end
+    end
+
+
+    class Param < Ast
+      attr_accessor :name
+      def initialize(name:, **rest)
+        self.name = name
+        super rest
+      end
+      def children
+        []
+      end
+    end
+
+    class DefaultParam < Param
+      attr_accessor :value
+      def initialize(value:, **rest)
+        self.value = value
+        super rest
+      end
+    end
+
+    class OrdinalParam < Param
+    end
+
+    class RequiredParam < Param
     end
 
 

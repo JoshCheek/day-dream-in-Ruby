@@ -116,36 +116,39 @@ RSpec.describe 'My language' do
           name:      :m,
           arguments: [],
           block:     {
-            type:        :block,
-            param_names: [:x],
-            body:        { type: :local_variable, name: :x },
+            type:   :block,
+            params: [{type: :ordinal_param, name: :x}],
+            body:   { type: :local_variable, name: :x },
           }
         parses! '@.m a (x) x',
           receiver:  { type: :self },
-          block:     { param_names: [:x] },
+          block:     { params: [{name: :x}] },
           arguments: [{name: :a}],
           name:      :m
         parses! '@.m a ()',
           receiver:  { type: :self },
           block:     {
-            param_names: [],
-            body: nil,
+            params: [],
+            body:   nil,
           }
       end
 
       specify 'argument lists can be empty' do
-        parses! '@.m () a',  block: { param_names: [] }
-        parses! '@.m (a) a', block: { param_names: [:a] }
+        parses! '@.m () a',  block: { params: [] }
+        parses! '@.m (a) a', block: { params: [{name: :a}] }
       end
 
       specify 'arguments can be separated by commas' do
-        parses! '@.m (a,b) a', block: { param_names: [:a, :b] }
-        parses! '@.m (a, b ,c , d) a', block: { param_names: [:a, :b, :c, :d] }
+        parses! '@.m (a,b) a', block: { params: [{name: :a}, {name: :b}] }
+        parses! '@.m (a, b ,c , d) a', block: { params: [{name: :a}, {name: :b}, {name: :c}, {name: :d}] }
       end
 
       specify 'arguments can assign directly to instance variables' do
         parses! '@.m (@a, @b) 1', block: {
-          param_names: [:_arg0, :_arg1],
+          params: [
+            {type: :ordinal_param, name: :_arg0},
+            {type: :ordinal_param, name: :_arg1}
+          ],
           body: [
             { type:   :assignment,
               target: { type: :instance_variable, name: :@a },
@@ -157,6 +160,17 @@ RSpec.describe 'My language' do
             },
             { type: :integer, value: 1 },
           ]
+        }
+      end
+
+      specify 'can use keyword arguments, both with and without defaults' do
+        parses! '@.m (a, b:, c:1) 2', block: {
+          body: { type: :integer, value: 2 },
+          params: [
+            { type: :ordinal_param,  name: :a },
+            { type: :required_param, name: :b },
+            { type: :default_param,  name: :c, value: {type: :integer, value: 1 }},
+          ],
         }
       end
 
@@ -201,7 +215,7 @@ RSpec.describe 'My language' do
           },
         },
         { type: :entry_location, body: {
-            type: :block, param_names: [:some_arg, :other_arg], body: {
+            type: :block, params: [{name: :some_arg}, {name: :other_arg}], body: {
               type:        :binary_expression,
               left_child:  { type: :local_variable, name: :some_arg },
               operator:    :+,
@@ -215,7 +229,7 @@ RSpec.describe 'My language' do
                   receiver:  { type: :local_variable, name: :y },
                   arguments: [ {type: :integer, value: 123} ],
                   block:     {
-                    param_names: [:x],
+                    params: [{ type: :ordinal_param, name: :x }],
                     body:        {
                       type:        :binary_expression,
                       operator:    :+,
@@ -249,12 +263,12 @@ RSpec.describe 'My language' do
       ddir_code.gsub! /^#{ddir_code[/\A */]}/, ''
       parses! ddir_code, expressions: [
         { type: :send_message, name: :d, block: {
-            param_names: [],
-            body: [{type: :local_variable, name: :e}]
+            params: [],
+            body:   [{type: :local_variable, name: :e}]
           }, receiver: {
             type: :send_message, name: :a2, arguments: [], block: {
-              param_names: [],
-              body:        [
+              params: [],
+              body:   [
                 { type:      :send_message,
                   name:      :c2,
                   arguments: [],

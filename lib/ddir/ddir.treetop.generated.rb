@@ -807,9 +807,9 @@ module DayDreamInRuby
 
       # build the block
       Ddir::Ast::Block.new \
-        depth:       context.depth,
-        param_names: params.ordered_names,
-        body:        body
+        depth:  context.depth,
+        params: params.to_ast(context),
+        body:   body
     end
   end
 
@@ -905,12 +905,12 @@ module DayDreamInRuby
       params
     end
 
-    def ordered_names
-      all_params.flat_map(&:names)
-    end
-
     def expressions
       all_params.flat_map(&:expressions)
+    end
+
+    def to_ast(context)
+      Ddir::Ast::Params.new params: all_params.map { |param| param.to_ast context }
     end
   end
 
@@ -1010,11 +1010,20 @@ module DayDreamInRuby
     def var
       elements[0]
     end
+
+    def default_value
+      elements[2]
+    end
   end
 
   module Param1
-    def names
-      [var.text_value.intern]
+    def to_ast(context)
+      if default_value.empty?
+        Ddir::Ast::RequiredParam.new name: var.text_value.intern
+      else
+        Ddir::Ast::DefaultParam.new name: var.text_value.intern,
+                                    value: default_value.to_ast(context)
+      end
     end
     def expressions
       []
@@ -1031,8 +1040,26 @@ module DayDreamInRuby
   end
 
   module Param3
-    def names
-      [@anon_name]
+    def to_ast(context)
+      Ddir::Ast::OrdinalParam.new name: var.text_value.intern
+    end
+    def expressions
+      []
+    end
+    def name_anon_vars_from_offset(offset)
+      offset
+    end
+  end
+
+  module Param4
+    def var
+      elements[0]
+    end
+  end
+
+  module Param5
+    def to_ast(context)
+      Ddir::Ast::OrdinalParam.new name: @anon_name
     end
     def expressions
       [ Ddir::Ast::Assignment.new(
@@ -1062,6 +1089,25 @@ module DayDreamInRuby
     i1, s1 = index, []
     r2 = _nt_local_variable
     s1 << r2
+    if r2
+      if has_terminal?(':', false, index)
+        r3 = instantiate_node(SyntaxNode,input, index...(index + 1))
+        @index += 1
+      else
+        terminal_parse_failure(':')
+        r3 = nil
+      end
+      s1 << r3
+      if r3
+        r5 = _nt_expression
+        if r5
+          r4 = r5
+        else
+          r4 = instantiate_node(SyntaxNode,input, index...index)
+        end
+        s1 << r4
+      end
+    end
     if s1.last
       r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
       r1.extend(Param0)
@@ -1073,22 +1119,37 @@ module DayDreamInRuby
     if r1
       r0 = r1
     else
-      i3, s3 = index, []
-      r4 = _nt_instance_variable
-      s3 << r4
-      if s3.last
-        r3 = instantiate_node(SyntaxNode,input, i3...index, s3)
-        r3.extend(Param2)
-        r3.extend(Param3)
+      i6, s6 = index, []
+      r7 = _nt_local_variable
+      s6 << r7
+      if s6.last
+        r6 = instantiate_node(SyntaxNode,input, i6...index, s6)
+        r6.extend(Param2)
+        r6.extend(Param3)
       else
-        @index = i3
-        r3 = nil
+        @index = i6
+        r6 = nil
       end
-      if r3
-        r0 = r3
+      if r6
+        r0 = r6
       else
-        @index = i0
-        r0 = nil
+        i8, s8 = index, []
+        r9 = _nt_instance_variable
+        s8 << r9
+        if s8.last
+          r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
+          r8.extend(Param4)
+          r8.extend(Param5)
+        else
+          @index = i8
+          r8 = nil
+        end
+        if r8
+          r0 = r8
+        else
+          @index = i0
+          r0 = nil
+        end
       end
     end
 
