@@ -56,11 +56,6 @@ module Ddir
     end
 
 
-    def initialize(attrs={})
-      return if attrs.empty?
-      raise "Additional attrs! #{attrs.inspect} for #{self.class.inspect}"
-    end
-
     def type
       @type ||= classname.gsub(/([a-z])([A-Z])/, '\1_\2').downcase.intern
     end
@@ -69,13 +64,13 @@ module Ddir
       @classname ||= self.class.to_s.split('::').last
     end
 
+    Self = Class.new Ast
 
     class Body < Ast
       attr_accessor :expressions
 
-      def initialize(expressions:, **rest)
+      def initialize(expressions:)
         self.expressions = expressions # expressions node, not a collection
-        super rest
       end
 
       def children
@@ -93,10 +88,9 @@ module Ddir
 
       attr_accessor :expressions, :depth
 
-      def initialize(depth:, expressions:[], **rest)
+      def initialize(depth:, expressions:[])
         self.expressions = expressions
         self.depth       = depth
-        super rest
       end
 
       alias children expressions
@@ -127,18 +121,20 @@ module Ddir
 
     class EntryLocation < Ast
       attr_accessor :name, :body, :depth
-      def initialize(name:, body:, depth:, **rest)
+      def initialize(name:, body:, depth:)
         self.name  = name
         self.body  = body
         self.depth = depth
-        super rest
       end
+
       def via_class?
         !!(name =~ /^[A-Z]/)
       end
+
       def via_method?
         !via_class?
       end
+
       def child_at(depth)
         self.body ||= Block.new(depth: self.depth)
         body.child_at(depth)
@@ -148,21 +144,19 @@ module Ddir
 
     class BinaryExpression < Ast
       attr_accessor :left_child, :operator, :right_child
-      def initialize(left_child:, operator:, right_child:, **rest)
+      def initialize(left_child:, operator:, right_child:)
         self.left_child  = left_child
         self.operator    = operator
         self.right_child = right_child
-        super rest
       end
     end
 
 
     class Assignment < Ast
       attr_accessor :target, :value
-      def initialize(target:, value:, **rest)
+      def initialize(target:, value:)
         self.target = target
         self.value  = value
-        super rest
       end
     end
 
@@ -170,13 +164,12 @@ module Ddir
     class SendMessage < Ast
       attr_accessor :receiver, :name, :arguments, :block, :depth
 
-      def initialize(receiver:, name:, arguments:, block:, depth:, **rest)
+      def initialize(receiver:, name:, arguments:, block:, depth:)
         self.receiver  = receiver
         self.name      = name
         self.arguments = arguments
         self.block     = block
         self.depth     = depth
-        super rest
       end
 
       def child_at(depth)
@@ -188,11 +181,10 @@ module Ddir
 
     class Block < Ast
       attr_accessor :params, :body, :depth
-      def initialize(params:[], body:nil, depth:, **rest)
+      def initialize(params:[], body:nil, depth:)
         self.params = params
         self.body   = body
         self.depth  = depth
-        super rest
       end
 
       def params?
@@ -210,27 +202,23 @@ module Ddir
       include Enumerable
 
       attr_accessor :params
-      def initialize(params:, **rest)
+      def initialize(params:)
         self.params = params
-        super rest
       end
 
       def each(&block)
         params.each(&block)
       end
     end
+    DestructuredParam = Class.new Params
 
-    class DestructuredParam < Params
-    end
 
     class Param < Ast
       attr_accessor :name
-      def initialize(name:, **rest)
+      def initialize(name:)
         self.name = name
-        super rest
       end
     end
-
     class DefaultParam < Param
       attr_accessor :value
       def initialize(value:, **rest)
@@ -238,54 +226,28 @@ module Ddir
         super rest
       end
     end
-
-    class OrdinalParam < Param
-    end
-
-    class RequiredParam < Param
-    end
+    OrdinalParam  = Class.new Param
+    RequiredParam = Class.new Param
 
 
     class ValueLiteral < Ast
       attr_accessor :value
-      def initialize(value:, **rest)
+      def initialize(value:)
         self.value = value
-        super rest
       end
     end
-
-
-    class Integer < ValueLiteral
-    end
-
-
-    class Symbol < ValueLiteral
-    end
-
-
-    class String < ValueLiteral
-    end
-
-
-    class Self < Ast
-    end
+    Integer = Class.new ValueLiteral
+    Symbol  = Class.new ValueLiteral
+    String  = Class.new ValueLiteral
 
 
     class Variable < Ast
       attr_accessor :name
-
-      def initialize(name:, **rest)
+      def initialize(name:)
         self.name = name
-        super rest
       end
     end
-
-
-    class LocalVariable < Variable
-    end
-
-
-    class InstanceVariable < Variable
-    end
+    LocalVariable    = Class.new Variable
+    InstanceVariable = Class.new Variable
   end
 end
