@@ -1,12 +1,66 @@
 #!/usr/bin/env ruby
+
 $LOAD_PATH.unshift File.expand_path('../lib', __dir__)
 require 'ddir'
 
-example_dir     = File.expand_path '../example', __dir__
-input_filename  = File.join example_dir, 'input.ddir'
-output_filename = File.join example_dir, 'output.rb'
+def self.ddir_to_ruby(body, wrap:)
+  ast = Ddir.parse errstream: $stderr, body: body
+  Ddir.generate ast, wrap: wrap
+end
 
-generated = Ddir.generate Ddir.parse errstream: $stderr, body: File.read(input_filename)
-File.write output_filename, generated
-$stdout.puts generated
-system 'ruby', '-c', output_filename
+def self.try_require(to_require)
+  require to_require
+  true
+rescue LoadError
+  return false
+end
+
+
+if ARGV.include?('-h') || ARGV.include?('--help')
+  $stdout.puts 'Day Dream In Ruby'
+  $stdout.puts ''
+  $stdout.puts 'usage:'
+  $stdout.puts '  ddir -s            # generate the sample output from the sample input'
+  $stdout.puts '  ddir filename.ddir # input is the file'
+  $stdout.puts '  ddir -e "program"  # input is the program'
+  $stdout.puts '  ddir -h            # this screen'
+  $stdout.puts ''
+  $stdout.puts 'option: -r           # print the Ruby code rather than evaluating it'
+  exit
+end
+
+if ARGV == ['-s']
+  example_dir     = File.expand_path '../example', __dir__
+  input_filename  = File.join example_dir, 'input.ddir'
+  output_filename = File.join example_dir, 'output.rb'
+  generated       = ddir_to_ruby.call File.read(input_filename), wrap: true
+  File.write output_filename, generated
+  $stdout.puts "Saved to: #{output_filename}"
+  system 'ruby', '-c', output_filename
+  exit
+end
+
+
+# might be nice to have a print_ast
+print_ruby = ARGV.delete '-r'
+
+if ARGV.delete '-e'
+  filename    = '-e'
+  ruby_source = ddir_to_ruby ARGV.first, wrap: false
+else
+  filename    = ARGV[0]
+  ruby_source = ddir_to_ruby File.read(filename), wrap: false
+end
+
+if !print_ruby
+  TOPLEVEL_BINDING.eval ruby_source, filename
+elsif  try_require 'coderay'
+  $stdout.puts CodeRay.encode(ruby_source, :ruby, :terminal)
+elsif try_require 'rouge'
+  $stdout.puts \
+    Rouge::Formatters::Terminal256
+    .new(theme: 'colorful')
+    .format(Rouge::Lexers::Ruby.new.lex ruby_source)
+else
+  $stdout.puts ruby_source
+end
