@@ -26,6 +26,7 @@ if ARGV.include?('-h') || ARGV.include?('--help')
   $stdout.puts '  ddir -h            # this screen'
   $stdout.puts ''
   $stdout.puts 'option: -r           # print the Ruby code rather than evaluating it'
+  $stdout.puts 'option: -c           # use color when printing ruby source'
   exit
 end
 
@@ -43,20 +44,21 @@ end
 
 # might be nice to have a print_ast
 print_ruby = ARGV.delete '-r'
+use_color  = ARGV.delete '-c'
 
 if ARGV.delete '-e'
   filename    = '-e'
   ruby_source = ddir_to_ruby ARGV.first, wrap: false
 else
   filename    = ARGV[0]
-  ruby_source = ddir_to_ruby File.read(filename), wrap: false
+  ruby_source = ddir_to_ruby File.read(filename), wrap: true
 end
 
 if !print_ruby
   TOPLEVEL_BINDING.eval ruby_source, filename
-elsif  try_require 'coderay'
+elsif use_color && try_require('coderay')
   $stdout.puts CodeRay.encode(ruby_source, :ruby, :terminal)
-elsif try_require 'rouge'
+elsif use_color && try_require('rouge')
   $stdout.puts \
     Rouge::Formatters::Terminal256
     .new(theme: 'colorful')
