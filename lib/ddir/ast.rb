@@ -249,5 +249,6 @@ module Ddir
     end
     LocalVariable    = Class.new Variable
     InstanceVariable = Class.new Variable
+    Constant         = Class.new Variable
   end
 end

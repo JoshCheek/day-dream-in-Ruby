@@ -94,7 +94,7 @@ module Ddir
       when :string
         ast.value.inspect
 
-      when :local_variable, :instance_variable
+      when :local_variable, :instance_variable, :constant
         ast.name.to_s
 
       when :params, :destructured_param

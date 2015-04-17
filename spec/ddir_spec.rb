@@ -42,6 +42,12 @@ RSpec.describe 'Day Dream In Ruby' do
       parses! 'aA', type: :local_variable, name: :aA
     end
 
+    specify 'constants are identifiers that start with a capital letter' do
+      parses! 'X',   type: :constant, name: :X
+      parses! 'XX',  type: :constant, name: :XX
+      parses! 'Xa',  type: :constant, name: :Xa
+    end
+
     specify 'ivars are identifiers with an @ prefix' do
       parses! '@x', type: :instance_variable, name: :@x
     end
@@ -600,6 +606,12 @@ RSpec.describe 'Day Dream In Ruby' do
       end
       it 'can get them' do
         expect(eval "a <- 1\na + a").to eq 2
+      end
+    end
+
+    context 'constants' do
+      it 'can get them' do
+        expect(eval 'RUBY_VERSION').to eq RUBY_VERSION
       end
     end
 

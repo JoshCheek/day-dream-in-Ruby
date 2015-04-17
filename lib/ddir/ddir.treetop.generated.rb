@@ -366,24 +366,29 @@ module DayDreamInRuby
       if r3
         r1 = r3
       else
-        r4 = _nt_self
+        r4 = _nt_constant
         if r4
           r1 = r4
         else
-          r5 = _nt_integer
+          r5 = _nt_self
           if r5
             r1 = r5
           else
-            r6 = _nt_symbol
+            r6 = _nt_integer
             if r6
               r1 = r6
             else
-              r7 = _nt_string
+              r7 = _nt_symbol
               if r7
                 r1 = r7
               else
-                @index = i1
-                r1 = nil
+                r8 = _nt_string
+                if r8
+                  r1 = r8
+                else
+                  @index = i1
+                  r1 = nil
+                end
               end
             end
           end
@@ -392,17 +397,17 @@ module DayDreamInRuby
     end
     s0 << r1
     if r1
-      s8, i8 = [], index
+      s9, i9 = [], index
       loop do
-        r9 = _nt_expression_modifier
-        if r9
-          s8 << r9
+        r10 = _nt_expression_modifier
+        if r10
+          s9 << r10
         else
           break
         end
       end
-      r8 = instantiate_node(SyntaxNode,input, i8...index, s8)
-      s0 << r8
+      r9 = instantiate_node(SyntaxNode,input, i9...index, s9)
+      s0 << r9
     end
     if s0.last
       r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
@@ -1572,6 +1577,71 @@ module DayDreamInRuby
     end
 
     node_cache[:variable][start_index] = r0
+
+    r0
+  end
+
+  module Constant0
+  end
+
+  module Constant1
+    def to_ast(context)
+      Ddir::Ast::Constant.new name: text_value.intern
+    end
+  end
+
+  def _nt_constant
+    start_index = index
+    if node_cache[:constant].has_key?(index)
+      cached = node_cache[:constant][index]
+      if cached
+        cached = SyntaxNode.new(input, index...(index + 1)) if cached == true
+        @index = cached.interval.end
+      end
+      return cached
+    end
+
+    i0, s0 = index, []
+    s1, i1 = [], index
+    loop do
+      if has_terminal?('\G[A-Z]', true, index)
+        r2 = true
+        @index += 1
+      else
+        r2 = nil
+      end
+      if r2
+        s1 << r2
+      else
+        break
+      end
+    end
+    if s1.empty?
+      @index = i1
+      r1 = nil
+    else
+      r1 = instantiate_node(SyntaxNode,input, i1...index, s1)
+    end
+    s0 << r1
+    if r1
+      r4 = _nt_identifier
+      if r4
+        r3 = r4
+      else
+        r3 = instantiate_node(SyntaxNode,input, index...index)
+      end
+      s0 << r3
+    end
+    if s0.last
+      r0 = instantiate_node(SyntaxNode,input, i0...index, s0)
+      r0.extend(Constant0)
+      r0.extend(Constant1)
+    else
+      @index = i0
+      r0 = nil
+    end
+
+    node_cache[:constant][start_index] = r0
 
     r0
   end

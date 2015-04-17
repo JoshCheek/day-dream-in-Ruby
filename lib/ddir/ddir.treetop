@@ -64,7 +64,7 @@ grammar DayDreamInRuby
   end
 
   rule expression
-    head:(entry_location / variable / self / integer / symbol / string)
+    head:(entry_location / variable / constant / self / integer / symbol / string)
     tail:expression_modifier* {
       def to_ast(context)
         tail.elements.inject head.to_ast(context) do |ast, modifier|
@@ -277,6 +277,14 @@ grammar DayDreamInRuby
     variable:(local_variable / instance_variable) {
       def to_ast(context)
         variable.to_ast(context)
+      end
+    }
+  end
+
+  rule constant
+    [A-Z]+ identifier? {
+      def to_ast(context)
+        Ddir::Ast::Constant.new name: text_value.intern
       end
     }
   end
