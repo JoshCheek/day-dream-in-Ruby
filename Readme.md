@@ -2,7 +2,45 @@ Day Dream In Ruby
 =================
 
 Playing with the idea of transpiling into Ruby.
-This is just an experiment, it is in no way intended to ever be legitimate.
+This is just a thought experiment, it is in no way intended to ever be legitimate.
+
+Example
+-------
+
+```coffee
+$ cat f.ddir
+-> :random_char
+  "a".upto "z"
+     .to_a
+     .sample
+
+-> :random_word (max_length)
+  @.rand max_length
+    .times
+    .map () @.random_char
+    .join
+
+-> :sentence (num_words, max_length)
+  num_words
+    .times
+    .map () @.random_word max_length
+    .reject (word.empty?)
+    .join " "
+    .capitalize
+    << "."
+
+num_words  <- 15
+max_length <- 10
+sentence   <- @.sentence num_words max_length
+@.puts "Your sentence: " + sentence.inspect
+
+$ bin/ddir f.ddir
+Your sentence: "Flxytjvg eeakvl nssrspb ehlqlouvv xln jcipgbg milvqe lidrrkwt t yj kdmretzy in rgpqulii rlr."
+```
+
+
+Why?
+-----
 
 It's mostly just an idea that came to me after realizing
 how hard it was to get my students to understand that the text in the Ruby file
@@ -22,9 +60,36 @@ Still the same language and underlying principles,
 but in a way that might make it easier to get them to realize that Ruby isn't the syntax in their files,
 but rather the memory structures and their relationships.
 
-It's a mediocre implementation, but I learned a lot while doing it.
 
-To see input / output, check the `example` directory.
+Running
+-------
+
+The example dir has a big [input file](https://github.com/JoshCheek/day-dream-in-Ruby/blob/master/example/input.ddir)
+which can be compiled into the [output file](https://github.com/JoshCheek/day-dream-in-Ruby/blob/master/example/output.rb)
+using `bin/ddir -s`
+
+Run code in a file:
+
+```sh
+$ cat f.ddir
+@.puts "hello world"
+
+$ bin/ddir f.ddir
+hello world
+```
+
+Get a list of options with:
+
+```sh
+bin/ddir -h
+```
+
+Run code from the console:
+
+```sh
+$ bin/ddir -e '@.puts "hello world"'
+```
+
 
 License
 -------
