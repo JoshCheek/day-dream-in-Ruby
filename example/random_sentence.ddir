@@ -1,0 +1,24 @@
+-> :random_char
+  "a".upto "z"
+     .to_a
+     .sample
+
+-> :random_word (max_length)
+  @.rand max_length
+    .times
+    .map () @.random_char
+    .join
+
+-> :sentence (num_words, max_length)
+  num_words
+    .times
+    .map () @.random_word max_length
+    .reject (word.empty?)
+    .join " "
+    .capitalize
+    << "."
+
+num_words  <- 15
+max_length <- 10
+sentence   <- @.sentence num_words max_length
+@.puts "Your sentence: " + sentence.inspect

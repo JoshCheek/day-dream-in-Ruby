@@ -8,7 +8,7 @@ Example
 -------
 
 ```coffee
-$ cat f.ddir
+$ cat example/random_sentence.ddir
 -> :random_char
   "a".upto "z"
      .to_a
@@ -34,7 +34,7 @@ max_length <- 10
 sentence   <- @.sentence num_words max_length
 @.puts "Your sentence: " + sentence.inspect
 
-$ bin/ddir f.ddir
+$ bin/ddir example/random_sentence.ddir
 Your sentence: "Flxytjvg eeakvl nssrspb ehlqlouvv xln jcipgbg milvqe lidrrkwt t yj kdmretzy in rgpqulii rlr."
 ```
 
