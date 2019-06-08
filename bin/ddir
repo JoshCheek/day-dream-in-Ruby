@@ -34,7 +34,7 @@ if ARGV == ['-s']
   example_dir     = File.expand_path '../example', __dir__
   input_filename  = File.join example_dir, 'input.ddir'
   output_filename = File.join example_dir, 'output.rb'
-  generated       = ddir_to_ruby.call File.read(input_filename), wrap: true
+  generated       = ddir_to_ruby File.read(input_filename), wrap: true
   File.write output_filename, generated
   $stdout.puts "Saved to: #{output_filename}"
   system 'ruby', '-c', output_filename
